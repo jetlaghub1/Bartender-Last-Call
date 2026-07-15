@@ -70,3 +70,9 @@
 - Replaced the tutorial's generic Add Card counter with selectable drink cards.
 - Added visible copy counts, disabled three-copy-limit cards, remaining deck slots, and Reset Choices.
 - Added rule tests for copy limits and full-deck blocking.
+
+## v0.5.6b-prompt7 — customer context hotfix
+
+- Added the customer preferences and bartender specialty to the three-drink selection lesson.
+- Made the highest-Appeal lesson use the exact three drinks selected in the previous step.
+- Calculated every displayed Appeal score from the shared rules engine.

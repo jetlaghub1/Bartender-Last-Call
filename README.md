@@ -5,6 +5,10 @@ const T=require('../js/tutorial.js');
 assert.equal(T.STEPS.length,8);
 assert.deepEqual(T.STEPS.map(step=>step.id),['customer','appeal','selection','service','tips','switch','deck','victory']);
 assert.equal(T.scoringExample().appeal,6);
+const practice=T.practiceScenario();
+assert.equal(practice.customer.name,'The Night Owl');
+assert.equal(practice.bartender.specialty,'Whiskey');
+assert.equal(new Set(practice.drinks.map(drink=>drink.appeal)).size,practice.drinks.length);
 assert(T.exactThree(3));
 assert(!T.exactThree(2));
 assert(T.legalDeckCount(30));
@@ -25,5 +29,7 @@ assert(app.includes("setTutorialFlag('blc.tutorialComplete','1')"),'Completion m
 assert(app.includes("start('ai','easy')"),'Completion must offer an Easy AI practice game.');
 assert(app.includes('data-deck-add="${card.id}"'),'Deck lesson must require selecting actual drink cards.');
 assert(app.includes('Copy Limit Reached'),'Deck lesson must demonstrate the three-copy limit.');
+assert(app.includes('const practice=T.practiceScenario()'),'Selection and service lessons must use a visible customer scenario.');
+assert(app.includes('practice.drinks.filter((drink,i)=>tutorial.selection.has(i))'),'Service lesson must use the player’s actual three selections.');
 assert(index.indexOf('js/tutorial.js')<index.indexOf('js/app.js'),'Tutorial logic must load before the app.');
 console.log('All Prompt 7 tutorial tests passed.');
