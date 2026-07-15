@@ -34,4 +34,4 @@ Extract the ZIP and upload the contents, not the enclosing folder, so this READM
 
 ## Status
 
-The next locked milestone after the included UI corrective pass is Prompt 5: Easy, Normal, and Hard AI. See `docs/ROADMAP.md`.
+Prompt 4.1 is included in this package. The next locked milestone is Prompt 5: Easy, Normal, and Hard AI. See `docs/ROADMAP.md`.

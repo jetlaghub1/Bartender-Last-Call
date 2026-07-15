@@ -9,5 +9,6 @@ Validation date: 2026-07-15
 - 29-card deck rejection: PASS
 - Four-copy deck rejection: PASS
 - Browser asset references: PASS by repository inspection
+- Prompt 4.1 UI contract checks: PASS (distinct player colors, focus visibility, reduced motion, touch-target sizing, Lock In guidance, and winner highlighting)
 
 The automated in-app browser could not open a local `file://` URL because of its security policy, so no claim of automated visual browser completion is made. The application deliberately has no external dependencies and is designed to launch by opening `index.html` directly.
