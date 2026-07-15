@@ -102,3 +102,14 @@
 - Added a curated legal starter deck covering every Spirit.
 - Documented why Style-specialist bartenders are deferred until after simulation.
 - Added automated content-quality, starter coverage, and saved-ID tests.
+
+## v0.5.9-prompt10 — deterministic simulation engine
+
+- Moved round comparison, round payouts, and match-victory resolution into shared browser/simulator rules.
+- Added seeded random generation and exact replay of complete AI-versus-AI matches.
+- Added starter, random legal, heuristic legal, and custom legal deck support.
+- Added switching decisions, all 49 ordered bartender matchups, and batch aggregation.
+- Added game length, first-player, tie, comeback, tips, switch, bartender, card, and customer metrics.
+- Added deterministic replay, legal-deck, shared-rule, batch, and matchup tests.
+- Fixed deck-cycle refills so each player keeps their own original deck instead of loading Player 1's saved deck.
+- Documented simulator configuration, metric definitions, and limitations.

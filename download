@@ -1,6 +1,7 @@
 const assert=require('assert');
 const fs=require('fs');
-const app=fs.readFileSync('js/app.js','utf8');
+const path=require('path');
+const app=fs.readFileSync(path.join(__dirname,'../js/app.js'),'utf8');
 
 function between(start,end){
   const from=app.indexOf(start);

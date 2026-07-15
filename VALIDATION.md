@@ -1,29 +1,62 @@
-# Locked Development Roadmap
+# Deterministic Simulation Engine
 
-1. Audit current build — complete in prior project history.
-2. Separate maintainable source — complete in prior project history.
-3. Implement v0.5 rules and tests — complete.
-4. Add and validate the saved 30-card deck builder — complete.
-4.1 Improve contrast, selection feedback, mobile layout, button states, and accessibility without changing gameplay — included in this reconstruction.
-5. Add Easy, Normal, and Hard AI — complete in v0.5.4.
-6. Complete private local hotseat PvP flow — complete in v0.5.5.
-7. Add an interactive tutorial — complete in v0.5.6.
-8. Audit all drink, customer, and bartender data — complete in v0.5.7.
-9. Remove artificial duplicate content and strengthen card roles — complete in v0.5.8.
-10. Create a deterministic shared simulation engine.
-11. Run a 100,000-game baseline balance study.
-12. Apply the smallest evidence-based balance patch.
-13. Iterate until balance targets are met.
-14. Redesign the commercial-style interface.
-15. Approve a consistent art specification.
-16. Generate production art in batches of eight.
-17. Add sound and animation.
-18. Run full functional QA.
-19. Fix all critical and major bugs.
-20. Run regression testing against official rules.
-21. Create the production itch.io HTML ZIP.
-22. Create the development archive.
-23. Prepare final itch.io page copy.
-24. Perform the final exact-ZIP release audit.
+Prompt 10 adds a standalone Node.js simulator in `simulation/` without creating a second version of the game rules. Both the browser game and simulator import `js/rules.js`, `js/ai.js`, and `js/data.js`.
 
-Numbering is locked. Decimal prompts may be added without renumbering the main roadmap. No prompt is complete until its build and acceptance checks are verified.
+## Reproducibility
+
+Every simulated game has a string seed. The seed controls bartender assignment, deck construction, shuffle order, customers, AI mistakes, equal-price ties, and bartender decisions. Repeating a configuration with the same seed returns an identical game record.
+
+## Supported studies
+
+- AI versus AI at Easy, Normal, or Hard difficulty
+- A specified bartender pair or a seeded random pair
+- Starter, random legal, or heuristic legal decks
+- All 49 ordered matchups across the seven bartenders, including mirror matches
+- Batch studies with one aggregate report
+- Custom legal 30-card decks through the simulator API
+
+Random decks sample from three available copies of every drink and are validated by the shared deck rule. Heuristic decks select the ten drinks with the strongest average Appeal and price tiebreak value for their bartender, then use three copies of each.
+
+## Shared rule path
+
+The simulator calls the same functions as the browser game for:
+
+- Appeal and best served drink
+- Appeal and price comparison, including seeded random final ties
+- Winner and loser payouts
+- Switch-token thresholds
+- Match victory at $50
+- Deck legality
+
+Automated tests fail if the browser game or simulator stops using the shared round comparison, payout, or match-victory functions.
+
+## Metrics
+
+Game records include rounds, winner, final tips, score history, initial and final bartenders, switches, deck lists, selected and served cards, customer results, Appeal ties, price ties, comeback status, and maximum winning-player deficit.
+
+Aggregate reports include:
+
+- First-player win rate
+- Average, median, and 90th-percentile game length
+- Appeal-tie and price-tie rates per round
+- Comeback rate, defined as winning after trailing by at least $10
+- Average switches per game
+- Average combined tips earned per round
+- Bartender games and wins
+- Card selection, service, and round-win counts
+- Customer outcomes and winning bartenders
+
+These are raw measurements, not balance conclusions. Prompt 11 runs the formal 100,000-game baseline and turns these measurements into a human-readable study.
+
+## Commands
+
+```text
+node simulation/run.js --games 1000 --seed first-study --deck random --difficulty hard
+node simulation/run.js --matchups --games-per-matchup 100 --seed matchup-study
+```
+
+Available deck values are `starter`, `random`, and `heuristic`. Available difficulty values are `easy`, `normal`, and `hard`. The runner writes JSON to standard output, so it can be redirected to a report file when desired.
+
+## Scope and limitations
+
+The engine simulates the current deterministic AI heuristics, not human psychology or an optimal game-theory player. It is suitable for reproducible regression tests and broad balance signals. Real playtest feedback remains necessary before commercial balance decisions.

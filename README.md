@@ -1,41 +1,50 @@
+'use strict';
+
 const assert=require('assert');
 const fs=require('fs');
-const T=require('../js/tutorial.js');
+const path=require('path');
+const SIM=require('../simulation/simulator.js');
+const R=require('../js/rules.js');
 
-assert.equal(T.STEPS.length,8);
-assert.deepEqual(T.STEPS.map(step=>step.id),['customer','appeal','selection','service','tips','switch','deck','victory']);
-assert.equal(T.scoringExample().appeal,6);
-const practice=T.practiceScenario();
-assert.equal(practice.customer.name,'The Night Owl');
-assert.equal(practice.bartender.specialty,'Whiskey');
-assert.equal(new Set(practice.drinks.map(drink=>drink.appeal)).size,practice.drinks.length);
-const switchLesson=T.switchScenario();
-assert.equal(switchLesson.current.name,'Theo');
-assert.equal(switchLesson.options.length,3);
-assert.equal(new Set(switchLesson.options.map(b=>b.specialty)).size,3);
-assert(T.exactThree(3));
-assert(!T.exactThree(2));
-assert(T.legalDeckCount(30));
-assert(!T.legalDeckCount(29));
-assert(T.canAddCopy(2,29));
-assert(!T.canAddCopy(3,29));
-assert(!T.canAddCopy(2,30));
-assert.equal(T.winnerTip(20),7);
-assert.equal(T.winTarget,50);
-assert.equal(T.maxCopies,3);
+const sequence=seed=>{const rng=SIM.createRng(seed);return Array.from({length:8},()=>rng())};
+assert.deepEqual(sequence('same-seed'),sequence('same-seed'),'Equal seeds must produce equal random sequences.');
+assert.notDeepEqual(sequence('same-seed'),sequence('different-seed'),'Different seeds should produce different sequences.');
 
-const app=fs.readFileSync('js/app.js','utf8');
-const index=fs.readFileSync('index.html','utf8');
-assert(app.includes("localStorage.getItem('blc.tutorialSeen')"),'First visit must offer the tutorial.');
-assert(app.includes('Skip for Now'),'Tutorial must be skippable.');
-assert(app.includes('Play Tutorial'),'Tutorial must be replayable.');
-assert(app.includes("setTutorialFlag('blc.tutorialComplete','1')"),'Completion must be saved.');
-assert(app.includes("start('ai','easy')"),'Completion must offer an Easy AI practice game.');
-assert(app.includes('data-deck-add="${card.id}"'),'Deck lesson must require selecting actual drink cards.');
-assert(app.includes('Copy Limit Reached'),'Deck lesson must demonstrate the three-copy limit.');
-assert(app.includes('const practice=T.practiceScenario()'),'Selection and service lessons must use a visible customer scenario.');
-assert(app.includes('practice.drinks.filter((drink,i)=>tutorial.selection.has(i))'),'Service lesson must use the player’s actual three selections.');
-assert(app.includes('data-tutorial-bartender="${b.id}"'),'Switch lesson must require an actual replacement bartender selection.');
-assert(app.includes("complete=saved||Boolean(selected)"),'Switch lesson cannot continue until the player saves or selects a bartender.');
-assert(index.indexOf('js/tutorial.js')<index.indexOf('js/app.js'),'Tutorial logic must load before the app.');
-console.log('All Prompt 7 tutorial tests passed.');
+for(const deck of [SIM.starterDeck(),SIM.randomLegalDeck(SIM.createRng('random-deck')),SIM.heuristicDeck(SIM.DATA.bartenders[0],SIM.createRng('heuristic-deck'))]){
+  assert.equal(deck.length,R.DECK);
+  assert(R.validateDeck(deck,SIM.DATA.drinks).ok);
+}
+
+const options={seed:'deterministic-game',deckType:['starter','heuristic'],difficulty:['normal','hard'],bartenders:['Ace','Mara']};
+const first=SIM.simulateGame(options),second=SIM.simulateGame(options);
+assert.deepEqual(first,second,'A complete game must replay exactly from the same seed and configuration.');
+assert(first.rounds>0&&first.rounds<200);
+assert.equal(first.customerEvents.length,first.rounds);
+assert.equal(first.scoreHistory.length,first.rounds+1);
+assert.equal(first.cardEvents.length,first.rounds*R.CHOOSE*2);
+assert([0,1].includes(first.winner));
+
+const batch=SIM.simulateBatch({games:12,seed:'batch-test',deckType:'random',difficulty:'hard'});
+assert.equal(batch.summary.games,12);
+assert.equal(batch.summary.player1Wins+batch.summary.player2Wins,12);
+assert(batch.summary.averageRounds>0);
+assert(batch.summary.averageTipsPerRound>0);
+assert(Object.keys(batch.summary.cardStats).length>0);
+assert(Object.keys(batch.summary.customerStats).length>0);
+
+const matchups=SIM.simulateAllBartenderMatchups({gamesPerMatchup:1,seed:'matchup-test'});
+const expected=SIM.DATA.bartenders.length*SIM.DATA.bartenders.length;
+assert.equal(matchups.matchups.length,expected);
+assert.equal(matchups.summary.games,expected);
+assert.equal(matchups.config.deckType,'heuristic');
+
+const appSource=fs.readFileSync(path.join(__dirname,'../js/app.js'),'utf8');
+const simulatorSource=fs.readFileSync(path.join(__dirname,'../simulation/simulator.js'),'utf8');
+for(const sharedCall of ['compareServed','roundGains','matchWinner']){
+  assert(appSource.includes(`R.${sharedCall}`),`Browser game must use shared ${sharedCall}.`);
+  assert(simulatorSource.includes(`RULES.${sharedCall}`),`Simulator must use shared ${sharedCall}.`);
+}
+assert(appSource.includes('p.deck=shuffle(instantiate(p.deckIds))'),'Browser refills must preserve each player\'s own deck, matching the simulator.');
+assert.strictEqual(SIM.RULES,R,'Simulator and tests must import the same rules module.');
+
+console.log('All deterministic simulation tests passed.');

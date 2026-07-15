@@ -45,5 +45,12 @@ Validation date: 2026-07-15
 - Prompt 9 Style distribution range 4–8: PASS
 - Prompt 9 unique customer preference profiles: PASS
 - Prompt 9 curated starter deck legality and all-Spirit coverage: PASS
+- Prompt 10 seeded random sequence repeatability: PASS
+- Prompt 10 complete-game deterministic replay: PASS
+- Prompt 10 random, starter, and heuristic deck legality: PASS
+- Prompt 10 browser and simulator shared round-resolution path: PASS
+- Prompt 10 each player's own deck preserved across refill cycles: PASS
+- Prompt 10 batch metrics for game length, first player, ties, tips, switches, cards, customers, and comebacks: PASS
+- Prompt 10 all 49 ordered bartender matchups: PASS
 
 The automated in-app browser could not open a local `file://` URL because of its security policy, so no claim of automated visual browser completion is made. The application deliberately has no external dependencies and is designed to launch by opening `index.html` directly.
