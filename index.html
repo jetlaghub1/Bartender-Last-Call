@@ -1,5 +1,27 @@
-const assert=require('assert'),R=require('../js/rules.js');
-const d={id:'x',spirit:'Whiskey',styles:['Premium','Strong'],price:20},c={love:'Whiskey',like:'Premium',dislike:'Sweet'},b={specialty:'Whiskey'};
-assert.equal(R.appeal(d,c,b),6);assert.equal(R.payout(20,true),7);assert.equal(R.payout(20,false),2);assert.equal(R.earned(14,31),2);
-const first={drink:{price:20},appeal:5},second={drink:{price:18},appeal:5};assert.deepEqual(R.compareServed(first,second,()=>0.9),{winner:0,appealTie:true,priceTie:false});assert.deepEqual(R.roundGains([first,second],0),[7,2]);assert.equal(R.matchWinner([50,49],0),0);assert.equal(R.matchWinner([50,50],1),1);
-const drinks=Array.from({length:10},(_,i)=>({id:String(i)})),deck=drinks.flatMap(x=>[x.id,x.id,x.id]);assert(R.validateDeck(deck,drinks).ok);assert(!R.validateDeck(deck.slice(1),drinks).ok);assert(!R.validateDeck(['0','0','0','0',...deck.slice(4)],drinks).ok);console.log('All rules tests passed.');
+const assert=require('assert');
+const fs=require('fs');
+const path=require('path');
+const app=fs.readFileSync(path.join(__dirname,'../js/app.js'),'utf8');
+
+function between(start,end){
+  const from=app.indexOf(start);
+  const to=app.indexOf(end,from+start.length);
+  assert(from>=0&&to>from,`Missing flow section: ${start}`);
+  return app.slice(from,to);
+}
+
+const setup=between('function beginSelection()','function chooseScreen()');
+const selection=between('function renderChoose(p)','function card(');
+const pass=between('function passToSelection(','function confirmReveal()');
+const confirmation=between('function confirmReveal()','function resolve()');
+
+assert(setup.includes("state.mode==='pvp')return passToSelection(0)"),'Player 1 must receive a privacy handoff after setup.');
+assert(selection.includes('return passToSelection(1)'),'Player 1 lock-in must go to Player 2 handoff.');
+assert(!selection.includes('passToSelection(1);switchScreen'),'Drink handoff must not repeat bartender selection.');
+assert(pass.includes("$('#ready').onclick=chooseScreen"),'Ready must open only the intended player hand.');
+assert(confirmation.includes('Both players are locked in'),'Both lock-ins must be confirmed.');
+assert(confirmation.includes('Reveal Drinks'),'Resolution must require an explicit shared reveal.');
+assert(confirmation.includes("$('#reveal').onclick=resolve"),'Only the reveal action may resolve local PvP.');
+assert(!confirmation.includes('.hand'),'Confirmation screen must not render either hand.');
+assert(!confirmation.includes('served.drink'),'Confirmation screen must not render either selected drink.');
+console.log('All Prompt 6 local PvP tests passed.');

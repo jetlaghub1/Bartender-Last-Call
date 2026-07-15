@@ -1,17 +1,37 @@
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.BLC_RULES=api})(typeof globalThis!=='undefined'?globalThis:this,function(){
-  const WIN=50,DECK=30,MAX=3,HAND=7,CHOOSE=3,THRESHOLDS=[15,30,45];
-  function traits(d){return[d.spirit].concat(d.styles||[])}
-  function appeal(d,c,b){const t=traits(d);return(t.includes(c.love)?3:0)+(t.includes(c.like)?2:0)+(t.includes(c.dislike)?-2:0)+(t.includes(b.specialty)?1:0)}
-  function best(served,c,b,rng=Math.random){return served.map(d=>({drink:d,appeal:appeal(d,c,b)})).sort((a,z)=>z.appeal-a.appeal||z.drink.price-a.drink.price||(rng()-.5))[0]}
-  function payout(price,won){return won?Math.round(price*.25+2):Math.round(price*.10)}
-  function earned(before,after){return THRESHOLDS.filter(x=>before<x&&after>=x).length}
-  function compareServed(first,second,rng=Math.random){
-    if(first.appeal!==second.appeal)return{winner:first.appeal>second.appeal?0:1,appealTie:false,priceTie:false};
-    if(first.drink.price!==second.drink.price)return{winner:first.drink.price>second.drink.price?0:1,appealTie:true,priceTie:false};
-    return{winner:rng()<.5?0:1,appealTie:true,priceTie:true};
+'use strict';
+
+const SIM=require('./simulator.js');
+
+function matchupFor(index){
+  const count=SIM.DATA.bartenders.length,pair=index%(count*count);
+  return[Math.floor(pair/count),pair%count];
+}
+
+function runBaseline(options={}){
+  const games=options.games??100000;
+  if(!Number.isInteger(games)||games<1)throw new Error('Baseline games must be a positive integer.');
+  const randomGames=options.randomGames??Math.floor(games/2),heuristicGames=games-randomGames;
+  if(randomGames<0||heuristicGames<0)throw new Error('Deck-stratum game counts cannot be negative.');
+  const seed=String(options.seed??'bartender-last-call-prompt11-v0.5.9'),difficulty=options.difficulty??'hard';
+  const overall=SIM.createAggregateState(),strata={random:SIM.createAggregateState(),heuristic:SIM.createAggregateState()},matchups=new Map();
+  let completed=0;
+  function runStratum(deckType,count){
+    for(let index=0;index<count;index++){
+      const pair=matchupFor(index),game=SIM.simulateGame({seed:`${seed}:${deckType}:${index}`,deckType,difficulty,bartenders:pair});
+      SIM.addGameToAggregate(overall,game);SIM.addGameToAggregate(strata[deckType],game);
+      const key=`${deckType}:${pair[0]}:${pair[1]}`;
+      if(!matchups.has(key))matchups.set(key,{deckType,first:pair[0],second:pair[1],state:SIM.createAggregateState()});
+      SIM.addGameToAggregate(matchups.get(key).state,game);
+      completed++;if(typeof options.onProgress==='function'&&(completed%5000===0||completed===games))options.onProgress({completed,games,deckType});
+    }
   }
-  function roundGains(served,winner){return served.map((choice,index)=>payout(choice.drink.price,index===winner))}
-  function matchWinner(tips,roundWinner){const reached=tips.map(value=>value>=WIN);if(reached[0]&&reached[1])return roundWinner;if(reached[0])return 0;if(reached[1])return 1;return null}
-  function validateDeck(ids,drinks){if(!Array.isArray(ids)||ids.length!==DECK)return{ok:false,message:`Deck must contain exactly ${DECK} cards.`};const valid=new Set(drinks.map(d=>d.id)),counts={};for(const id of ids){if(!valid.has(id))return{ok:false,message:'Deck contains an unknown card.'};counts[id]=(counts[id]||0)+1;if(counts[id]>MAX)return{ok:false,message:'No more than 3 copies of a drink are allowed.'}}return{ok:true,message:'Legal 30-card deck.'}}
-  return{WIN,DECK,MAX,HAND,CHOOSE,THRESHOLDS,appeal,best,payout,earned,compareServed,roundGains,matchWinner,validateDeck};
-});
+  runStratum('random',randomGames);runStratum('heuristic',heuristicGames);
+  return{
+    config:{study:options.study??'Balance simulation',rulesVersion:'0.5',sourceVersion:options.sourceVersion??SIM.DATA.schemaVersion,games,randomGames,heuristicGames,seed,difficulty,bartenders:SIM.DATA.bartenders.length,orderedMatchups:SIM.DATA.bartenders.length**2,scheduling:'Round-robin ordered matchups within each deck stratum'},
+    summary:SIM.finalizeAggregate(overall),
+    strata:{random:SIM.finalizeAggregate(strata.random),heuristic:SIM.finalizeAggregate(strata.heuristic)},
+    matchups:[...matchups.values()].map(entry=>({deckType:entry.deckType,first:SIM.DATA.bartenders[entry.first].name,second:SIM.DATA.bartenders[entry.second].name,summary:SIM.finalizeAggregate(entry.state)})).sort((a,b)=>a.deckType.localeCompare(b.deckType)||a.first.localeCompare(b.first)||a.second.localeCompare(b.second))
+  };
+}
+
+module.exports={matchupFor,runBaseline};

@@ -1,82 +1,17 @@
-(function(root,factory){
-  const api=factory();
-  if(typeof module==='object'&&module.exports)module.exports=api;
-  root.BLC_CONTENT=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(){
-  function countBy(items,key){return items.reduce((out,item)=>{const value=typeof key==='function'?key(item):item[key];out[value]=(out[value]||0)+1;return out},{})}
-  function duplicateValues(values){const counts=countBy(values,value=>value);return Object.keys(counts).filter(value=>counts[value]>1)}
-  function audit(data){
-    const errors=[],warnings=[];
-    const spirits=new Set(data.spirits||[]),styles=new Set(data.styles||[]),traits=new Set([...spirits,...styles]);
-    const drinks=Array.isArray(data.drinks)?data.drinks:[],customers=Array.isArray(data.customers)?data.customers:[],bartenders=Array.isArray(data.bartenders)?data.bartenders:[];
-    if(duplicateValues(data.spirits||[]).length)errors.push('Spirit vocabulary contains duplicates.');
-    if(duplicateValues(data.styles||[]).length)errors.push('Style vocabulary contains duplicates.');
-    for(const [i,drink] of drinks.entries()){
-      const label=`Drink ${i+1}${drink&&drink.name?` (${drink.name})`:''}`;
-      if(!drink||typeof drink!=='object'){errors.push(`${label} is not an object.`);continue}
-      if(typeof drink.id!=='string'||!drink.id)errors.push(`${label} needs one ID.`);
-      if(typeof drink.name!=='string'||!drink.name.trim())errors.push(`${label} needs one name.`);
-      if(typeof drink.spirit!=='string'||!spirits.has(drink.spirit))errors.push(`${label} needs exactly one allowed Spirit.`);
-      if(!Array.isArray(drink.styles)||drink.styles.length<1||drink.styles.length>2)errors.push(`${label} needs one or two Style traits.`);
-      else{
-        if(new Set(drink.styles).size!==drink.styles.length)errors.push(`${label} repeats a Style trait.`);
-        for(const style of drink.styles)if(!styles.has(style))errors.push(`${label} uses unknown Style ${style}.`);
-        if(drink.styles.includes('Premium')&&drink.styles.includes('Cheap'))errors.push(`${label} has contradictory Premium and Cheap traits.`);
-      }
-      if(!Number.isFinite(drink.price)||drink.price<=0)errors.push(`${label} needs one positive numeric price.`);
-    }
-    for(const duplicate of duplicateValues(drinks.map(d=>d.id)))errors.push(`Duplicate drink ID: ${duplicate}.`);
-    for(const duplicate of duplicateValues(drinks.map(d=>d.name)))errors.push(`Duplicate drink name: ${duplicate}.`);
-    const profiles=drinks.map(d=>`${d.spirit}|${(d.styles||[]).slice().sort().join('+')}|${d.price}`);
-    for(const duplicate of duplicateValues(profiles))errors.push(`Duplicate drink mechanical profile: ${duplicate}.`);
-    for(const [i,customer] of customers.entries()){
-      const label=`Customer ${i+1}${customer&&customer.name?` (${customer.name})`:''}`;
-      if(!customer||typeof customer!=='object'){errors.push(`${label} is not an object.`);continue}
-      if(typeof customer.name!=='string'||!customer.name.trim())errors.push(`${label} needs one name.`);
-      for(const field of ['love','like','dislike'])if(typeof customer[field]!=='string'||!traits.has(customer[field]))errors.push(`${label} needs exactly one allowed ${field}.`);
-      if(new Set([customer.love,customer.like,customer.dislike]).size!==3)errors.push(`${label} repeats or contradicts a preference.`);
-    }
-    for(const duplicate of duplicateValues(customers.map(c=>c.name)))errors.push(`Duplicate customer name: ${duplicate}.`);
-    const customerProfiles=customers.map(c=>`${c.love}|${c.like}|${c.dislike}`);
-    for(const duplicate of duplicateValues(customerProfiles))errors.push(`Duplicate customer preference profile: ${duplicate}.`);
-    for(const [i,bartender] of bartenders.entries()){
-      const label=`Bartender ${i+1}${bartender&&bartender.name?` (${bartender.name})`:''}`;
-      if(!bartender||typeof bartender!=='object'){errors.push(`${label} is not an object.`);continue}
-      if(typeof bartender.name!=='string'||!bartender.name.trim())errors.push(`${label} needs one name.`);
-      if(typeof bartender.specialty!=='string'||!traits.has(bartender.specialty))errors.push(`${label} needs exactly one allowed specialty.`);
-      if(bartender.passive!==`${bartender.specialty} drinks gain +1 Appeal.`)errors.push(`${label} passive must be the standard +1 Appeal ability.`);
-    }
-    for(const duplicate of duplicateValues(bartenders.map(b=>b.name)))errors.push(`Duplicate bartender name: ${duplicate}.`);
-    for(const duplicate of duplicateValues(bartenders.map(b=>b.specialty)))errors.push(`Duplicate bartender specialty: ${duplicate}.`);
-    if(Array.isArray(data.starterIds)){
-      const drinkIds=new Set(drinks.map(d=>d.id));
-      if(data.starterIds.length!==10||new Set(data.starterIds).size!==10)errors.push('Starter pool must contain 10 unique drink IDs.');
-      for(const id of data.starterIds)if(!drinkIds.has(id))errors.push(`Starter pool uses unknown drink ID: ${id}.`);
-    }
-    const numberedDrinkNames=drinks.filter(d=>/\s\d+$/.test(d.name)).length;
-    const numberedCustomerNames=customers.filter(c=>/\s\d+$/.test(c.name)).length;
-    if(numberedDrinkNames)warnings.push(`${numberedDrinkNames} drink names use numbered variants; review in Prompt 9.`);
-    if(numberedCustomerNames)warnings.push(`${numberedCustomerNames} customer names use numbered variants; review in Prompt 9.`);
-    if(drinks.length&&drinks.every(d=>d.styles.length===2))warnings.push('Every drink has two Style traits; one-trait drinks are absent.');
-    const bartenderSpecialties=new Set(bartenders.map(b=>b.specialty));
-    const uncoveredStyles=[...styles].filter(style=>!bartenderSpecialties.has(style));
-    if(uncoveredStyles.length)warnings.push(`No bartender specializes in Style traits: ${uncoveredStyles.join(', ')}.`);
-    const preferenceCoverage=countBy(customers.flatMap(c=>[c.love,c.like,c.dislike]),value=>value);
-    const uncoveredPreferences=[...traits].filter(trait=>!preferenceCoverage[trait]);
-    if(uncoveredPreferences.length)warnings.push(`Customer preferences do not cover: ${uncoveredPreferences.join(', ')}.`);
-    const summary={
-      schemaVersion:data.schemaVersion||'unversioned',
-      drinks:drinks.length,customers:customers.length,bartenders:bartenders.length,
-      drinkSpiritCounts:countBy(drinks,'spirit'),
-      drinkStyleCounts:countBy(drinks.flatMap(d=>d.styles),value=>value),
-      priceCounts:countBy(drinks,'price'),
-      customerLoveCounts:countBy(customers,'love'),customerLikeCounts:countBy(customers,'like'),customerDislikeCounts:countBy(customers,'dislike'),
-      bartenderSpecialtyCounts:countBy(bartenders,'specialty'),
-      numberedDrinkNames,numberedCustomerNames,
-      oneStyleDrinks:drinks.filter(d=>d.styles.length===1).length,
-      twoStyleDrinks:drinks.filter(d=>d.styles.length===2).length
-    };
-    return{ok:errors.length===0,errors,warnings,summary};
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.BLC_RULES=api})(typeof globalThis!=='undefined'?globalThis:this,function(){
+  const WIN=50,DECK=30,MAX=3,HAND=7,CHOOSE=3,THRESHOLDS=[15,30,45];
+  function traits(d){return[d.spirit].concat(d.styles||[])}
+  function appeal(d,c,b){const t=traits(d);return(t.includes(c.love)?3:0)+(t.includes(c.like)?2:0)+(t.includes(c.dislike)?-2:0)+(t.includes(b.specialty)?1:0)}
+  function best(served,c,b,rng=Math.random){return served.map(d=>({drink:d,appeal:appeal(d,c,b)})).sort((a,z)=>z.appeal-a.appeal||z.drink.price-a.drink.price||(rng()-.5))[0]}
+  function payout(price,won){return won?Math.round(price*.25+2):Math.round(price*.10)}
+  function earned(before,after){return THRESHOLDS.filter(x=>before<x&&after>=x).length}
+  function compareServed(first,second,rng=Math.random){
+    if(first.appeal!==second.appeal)return{winner:first.appeal>second.appeal?0:1,appealTie:false,priceTie:false};
+    if(first.drink.price!==second.drink.price)return{winner:first.drink.price>second.drink.price?0:1,appealTie:true,priceTie:false};
+    return{winner:rng()<.5?0:1,appealTie:true,priceTie:true};
   }
-  return{audit,countBy,duplicateValues};
+  function roundGains(served,winner){return served.map((choice,index)=>payout(choice.drink.price,index===winner))}
+  function matchWinner(tips,roundWinner){const reached=tips.map(value=>value>=WIN);if(reached[0]&&reached[1])return roundWinner;if(reached[0])return 0;if(reached[1])return 1;return null}
+  function validateDeck(ids,drinks){if(!Array.isArray(ids)||ids.length!==DECK)return{ok:false,message:`Deck must contain exactly ${DECK} cards.`};const valid=new Set(drinks.map(d=>d.id)),counts={};for(const id of ids){if(!valid.has(id))return{ok:false,message:'Deck contains an unknown card.'};counts[id]=(counts[id]||0)+1;if(counts[id]>MAX)return{ok:false,message:'No more than 3 copies of a drink are allowed.'}}return{ok:true,message:'Legal 30-card deck.'}}
+  return{WIN,DECK,MAX,HAND,CHOOSE,THRESHOLDS,appeal,best,payout,earned,compareServed,roundGains,matchWinner,validateDeck};
 });

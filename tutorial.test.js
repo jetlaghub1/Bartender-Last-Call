@@ -1,38 +1,21 @@
+'use strict';
+
 const assert=require('assert');
-const CONTENT=require('../js/content.js');
+const fs=require('fs');
+const path=require('path');
 const DATA=require('../js/data.js');
+const BASELINE=require('../simulation/baseline.js');
+const COMPARISON=require('../simulation/comparison.js');
 
-const report=CONTENT.audit(DATA);
-assert(report.ok,report.errors.join('\n'));
-assert.equal(report.errors.length,0);
-assert.equal(report.summary.schemaVersion,'0.5.8');
-assert.equal(report.summary.drinks,42);
-assert.equal(report.summary.customers,28);
-assert.equal(report.summary.bartenders,7);
-assert.equal(Object.keys(report.summary.drinkSpiritCounts).length,7);
-assert(Object.values(report.summary.drinkSpiritCounts).every(count=>count===6));
+for(const change of COMPARISON.PATCH.changes)assert.equal(DATA.drinks.find(card=>card.id===change.id).price,change.after);
+assert.equal(COMPARISON.PATCH.category,'Drink prices only');
+assert.equal(COMPARISON.PATCH.changes.length,6);
 
-for(const drink of DATA.drinks){
-  assert(DATA.spirits.includes(drink.spirit));
-  assert(drink.styles.length>=1&&drink.styles.length<=2);
-  assert.equal(new Set(drink.styles).size,drink.styles.length);
-  assert(!drink.styles.includes('Premium')||!drink.styles.includes('Cheap'));
-  assert(Number.isFinite(drink.price)&&drink.price>0);
-}
-for(const customer of DATA.customers){
-  assert.equal(new Set([customer.love,customer.like,customer.dislike]).size,3);
-}
-for(const bartender of DATA.bartenders){
-  assert.equal(bartender.passive,`${bartender.specialty} drinks gain +1 Appeal.`);
-}
+const before=JSON.parse(fs.readFileSync(path.join(__dirname,'../reports/prompt11/baseline_report.json'),'utf8'));
+const after=BASELINE.runBaseline({games:98,randomGames:49,seed:'comparison-test',study:'Prompt 12 test'});
+const artifacts=COMPARISON.buildArtifacts(before,after);
+for(const name of ['BALANCE_PATCH_REPORT.md','before_report.json','after_report.json','before_after_summary.csv','bartender_before_after.csv','drink_price_changes.csv','after_drink_performance.csv'])assert(artifacts[name]&&artifacts[name].length>20,`Missing comparison artifact: ${name}`);
+assert.equal(artifacts['drink_price_changes.csv'].trim().split('\n').length,7);
+assert(artifacts['BALANCE_PATCH_REPORT.md'].includes('drink prices only'));
 
-const badDrink=JSON.parse(JSON.stringify(DATA));
-badDrink.drinks[0].styles=['Premium','Cheap'];
-assert(!CONTENT.audit(badDrink).ok,'Contradictory drink traits must fail.');
-const badCustomer=JSON.parse(JSON.stringify(DATA));
-badCustomer.customers[0].dislike=badCustomer.customers[0].love;
-assert(!CONTENT.audit(badCustomer).ok,'Repeated customer preferences must fail.');
-const badBartender=JSON.parse(JSON.stringify(DATA));
-badBartender.bartenders[0].passive='Activated ability';
-assert(!CONTENT.audit(badBartender).ok,'Nonstandard bartender passives must fail.');
-console.log('All Prompt 8 content tests passed.');
+console.log('All Prompt 12 comparison tests passed.');

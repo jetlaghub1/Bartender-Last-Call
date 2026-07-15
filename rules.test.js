@@ -1,45 +1,25 @@
+'use strict';
+
 const assert=require('assert');
-const fs=require('fs');
-const R=require('../js/rules.js');
-const AI=require('../js/ai.js');
+const DATA=require('../js/data.js');
+const RULES=require('../js/rules.js');
 
-const customer={love:'Whiskey',like:'Premium',dislike:'Beer'};
-const whiskeyBartender={name:'Theo',specialty:'Whiskey'};
-const hand=[
-  {id:'best',instanceId:'best-1',spirit:'Whiskey',styles:['Premium'],price:20},
-  {id:'good',instanceId:'good-1',spirit:'Whiskey',styles:['Sweet'],price:12},
-  {id:'tie',instanceId:'tie-1',spirit:'Gin',styles:['Premium'],price:18},
-  {id:'bad',instanceId:'bad-1',spirit:'Beer',styles:['Cheap'],price:24},
-  {id:'plain',instanceId:'plain-1',spirit:'Rum',styles:['Fresh'],price:10}
-];
+const expected={d4:20,d8:20,d16:20,d29:16,d36:21,d37:12};
+for(const [id,price] of Object.entries(expected)){
+  const card=DATA.drinks.find(drink=>drink.id===id);
+  assert(card,`Missing patched card ${id}.`);
+  assert.equal(card.price,price,`${card.name} price must match the Prompt 12 patch.`);
+}
 
-const normal=AI.chooseDrinks(hand,customer,whiskeyBartender,'normal',()=>0.5);
-const hard=AI.chooseDrinks(hand,customer,whiskeyBartender,'hard',()=>0.5);
-assert.equal(normal.length,3);
-assert.equal(hard.length,3);
-assert.equal(R.best(normal,customer,whiskeyBartender,()=>0.5).drink.id,'best');
-assert.equal(R.best(hard,customer,whiskeyBartender,()=>0.5).drink.id,'best');
+assert.equal(DATA.schemaVersion,'0.5.11');
+assert.equal(DATA.drinks.length,42);
+assert.equal(DATA.customers.length,28);
+assert.equal(DATA.bartenders.length,7);
+assert(DATA.bartenders.every(bartender=>bartender.passive===`${bartender.specialty} drinks gain +1 Appeal.`));
+assert.equal(RULES.appeal({spirit:'Whiskey',styles:['Premium','Sweet']},{love:'Whiskey',like:'Premium',dislike:'Sweet'},{specialty:'Whiskey'}),4);
+assert.equal(RULES.WIN,50);
+assert.deepEqual(RULES.THRESHOLDS,[15,30,45]);
+assert.equal(RULES.payout(20,true),7);
+assert.equal(RULES.payout(20,false),2);
 
-const easy=AI.chooseDrinks(hand,customer,whiskeyBartender,'easy',()=>0.4);
-assert.equal(easy.length,3);
-assert.equal(new Set(easy.map(card=>card.instanceId)).size,3);
-
-const beerBartender={name:'Ace',specialty:'Beer'};
-const bartenders=[beerBartender,whiskeyBartender];
-const whiskeyDeck=Array.from({length:8},(_,i)=>({spirit:'Whiskey',styles:['Strong'],price:12+i}));
-assert.equal(AI.chooseBartender({current:beerBartender,bartenders,deck:whiskeyDeck,tokens:1,tips:0,difficulty:'normal',rng:()=>0.5}),whiskeyBartender);
-assert.equal(AI.chooseBartender({current:beerBartender,bartenders,deck:whiskeyDeck,tokens:0,tips:0,difficulty:'hard',rng:()=>0.5}),beerBartender);
-const marginalDeck=[
-  {spirit:'Beer',styles:['Clean'],price:0},
-  {spirit:'Whiskey',styles:['Strong'],price:15},
-  {spirit:'Whiskey',styles:['Sweet'],price:15}
-];
-assert.equal(AI.chooseBartender({current:beerBartender,bartenders,deck:marginalDeck,tokens:1,tips:0,difficulty:'hard',rng:()=>0.5}),beerBartender);
-assert.equal(AI.chooseBartender({current:beerBartender,bartenders,deck:marginalDeck,tokens:1,tips:14,difficulty:'hard',rng:()=>0.5}),whiskeyBartender);
-assert.equal(AI.distanceToNextToken(14),1);
-assert.equal(AI.distanceToNextToken(30),15);
-
-const source=fs.readFileSync('js/ai.js','utf8');
-assert(!source.includes('opponent'),'AI engine must not accept or inspect opponent state.');
-assert(!source.includes('state.players'),'AI engine must not inspect match player state.');
-console.log('All Prompt 5 AI tests passed.');
+console.log('All Prompt 12 balance-patch tests passed.');
