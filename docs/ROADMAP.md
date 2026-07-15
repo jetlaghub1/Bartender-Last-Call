@@ -5,8 +5,8 @@
 3. Implement v0.5 rules and tests — complete.
 4. Add and validate the saved 30-card deck builder — complete.
 4.1 Improve contrast, selection feedback, mobile layout, button states, and accessibility without changing gameplay — included in this reconstruction.
-5. Add Easy, Normal, and Hard AI.
-6. Complete private local hotseat PvP flow.
+5. Add Easy, Normal, and Hard AI — complete in v0.5.4.
+6. Complete private local hotseat PvP flow — complete in v0.5.5.
 7. Add an interactive tutorial.
 8. Audit all drink, customer, and bartender data.
 9. Remove artificial duplicate content and strengthen card roles.

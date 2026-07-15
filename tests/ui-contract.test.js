@@ -10,4 +10,9 @@ assert(css.includes('min-height:44px'),'Controls need mobile-sized touch targets
 assert(app.includes("'player-one':'player-two'"),'Player identity classes must be assigned during selection.');
 assert(app.includes('Choose ${3-p.selected.length} More'),'Lock In must explain its disabled state.');
 assert(app.includes('result-row ${i===winner'), 'Round results must highlight the winner.');
+assert(css.includes('.price{position:static;margin-top:auto'), 'Card prices must remain below variable-length text.');
+assert(app.includes('function instantiate(ids)'), 'Each physical drink copy must receive a unique identity.');
+assert(app.includes('data-instance="${d.instanceId}"'), 'Rendered cards must expose their unique instance identity.');
+assert(app.includes('if(p.tokens<=0){finishSwitch();return}'), 'Bartender selection must skip players without a switch token.');
+assert(app.includes("state.mode==='pvp'&&state.players[1].tokens>0"), 'PvP pass screen must require a Player 2 switch token.');
 console.log('All Prompt 4.1 UI contract tests passed.');

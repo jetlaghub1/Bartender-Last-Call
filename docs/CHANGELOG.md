@@ -15,3 +15,43 @@
 - Improved enabled and disabled Lock In feedback, including remaining-card guidance.
 - Strengthened mobile touch targets, stacking, contrast, focus outlines, and reduced-motion support.
 - Added clearer gold winner treatment and larger tip payouts on round results.
+
+## v0.5.3a-prompt4.1 — itch.io packaging hotfix
+
+- Rebuilt the browser release with standards-compliant forward-slash ZIP paths so itch.io can resolve the CSS and JavaScript files.
+- Kept `index.html` at the ZIP root and verified every local asset reference against the exact archive.
+
+## v0.5.3b-prompt4.1 — card price layout hotfix
+
+- Replaced the absolutely positioned card price with a flexible footer below the card text.
+- Added spacing and a divider so names, traits, and prices cannot overlap on desktop or mobile.
+
+## v0.5.3c-prompt4.1 — duplicate-selection hotfix
+
+- Gave every physical copy of a drink card a unique instance identity.
+- Fixed duplicate drink copies appearing selected together while only counting as one selection.
+- Preserved the official token-based bartender switching rule.
+
+## v0.5.3d-prompt4.1 — conditional bartender prompt
+
+- The bartender selection phase now appears only when that player owns a switch token.
+- Local PvP skips the bartender pass-device screen when Player 2 has no token.
+- The Keep button now clearly explains that the token will be saved.
+
+## v0.5.4-prompt5 — AI difficulty system
+
+- Added Easy, Normal, and Hard difficulty selection before AI matches.
+- Moved AI behavior into a reusable, deterministic engine.
+- Added customer-aware Appeal evaluation and price-tiebreaker logic.
+- Added deck-aware bartender switching and Hard token conservation.
+- Kept human hands and locked selections outside every AI decision input.
+- Added automated AI behavior and privacy contract tests.
+
+## v0.5.5-prompt6 — private local PvP
+
+- Fixed the post-lock handoff that incorrectly reopened Player 2 bartender selection.
+- Added privacy screens before Player 1 and Player 2 hands are rendered.
+- Added a pass-back step after Player 2 bartender setup.
+- Added a neutral both-locked screen with an explicit shared Reveal Drinks action.
+- Ensured the confirmation screen exposes neither hand nor selected drink.
+- Added local PvP flow and privacy contract tests.
