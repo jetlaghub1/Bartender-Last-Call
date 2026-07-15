@@ -30,5 +30,8 @@ Validation date: 2026-07-15
 - Prompt 7 customer and bartender context on selection/service lessons: PASS
 - Prompt 7 service lesson uses the player's actual selected cards: PASS
 - Prompt 7 displayed practice Appeal values come from shared rules and are uniquely ranked: PASS
+- Prompt 7 switch lesson exposes three replacement bartenders with unique specialties: PASS
+- Prompt 7 switch lesson requires save or replacement selection before continuing: PASS
+- Prompt 7 token cost, new specialty, and cancel-to-save behavior: PASS
 
 The automated in-app browser could not open a local `file://` URL because of its security policy, so no claim of automated visual browser completion is made. The application deliberately has no external dependencies and is designed to launch by opening `index.html` directly.

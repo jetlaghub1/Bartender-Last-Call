@@ -32,9 +32,19 @@
     ].map(drink=>({...drink,appeal:R.appeal(drink,customer,bartender)}));
     return{customer,bartender,drinks};
   }
+  function switchScenario(){
+    return{
+      current:{id:'theo',name:'Theo',specialty:'Whiskey'},
+      options:[
+        {id:'ace',name:'Ace',specialty:'Beer',passive:'Beer drinks gain +1 Appeal.'},
+        {id:'june',name:'June',specialty:'Rum',passive:'Rum drinks gain +1 Appeal.'},
+        {id:'sol',name:'Sol',specialty:'Tequila',passive:'Tequila drinks gain +1 Appeal.'}
+      ]
+    };
+  }
   function exactThree(count){return count===R.CHOOSE}
   function legalDeckCount(count){return count===R.DECK}
   function canAddCopy(existingCopies,deckCount){return existingCopies<R.MAX&&deckCount<R.DECK}
   function winnerTip(price){return R.payout(price,true)}
-  return{STEPS,scoringExample,practiceScenario,exactThree,legalDeckCount,canAddCopy,winnerTip,winTarget:R.WIN,maxCopies:R.MAX};
+  return{STEPS,scoringExample,practiceScenario,switchScenario,exactThree,legalDeckCount,canAddCopy,winnerTip,winTarget:R.WIN,maxCopies:R.MAX};
 });

@@ -9,6 +9,10 @@ const practice=T.practiceScenario();
 assert.equal(practice.customer.name,'The Night Owl');
 assert.equal(practice.bartender.specialty,'Whiskey');
 assert.equal(new Set(practice.drinks.map(drink=>drink.appeal)).size,practice.drinks.length);
+const switchLesson=T.switchScenario();
+assert.equal(switchLesson.current.name,'Theo');
+assert.equal(switchLesson.options.length,3);
+assert.equal(new Set(switchLesson.options.map(b=>b.specialty)).size,3);
 assert(T.exactThree(3));
 assert(!T.exactThree(2));
 assert(T.legalDeckCount(30));
@@ -31,5 +35,7 @@ assert(app.includes('data-deck-add="${card.id}"'),'Deck lesson must require sele
 assert(app.includes('Copy Limit Reached'),'Deck lesson must demonstrate the three-copy limit.');
 assert(app.includes('const practice=T.practiceScenario()'),'Selection and service lessons must use a visible customer scenario.');
 assert(app.includes('practice.drinks.filter((drink,i)=>tutorial.selection.has(i))'),'Service lesson must use the player’s actual three selections.');
+assert(app.includes('data-tutorial-bartender="${b.id}"'),'Switch lesson must require an actual replacement bartender selection.');
+assert(app.includes("complete=saved||Boolean(selected)"),'Switch lesson cannot continue until the player saves or selects a bartender.');
 assert(index.indexOf('js/tutorial.js')<index.indexOf('js/app.js'),'Tutorial logic must load before the app.');
 console.log('All Prompt 7 tutorial tests passed.');

@@ -76,3 +76,9 @@
 - Added the customer preferences and bartender specialty to the three-drink selection lesson.
 - Made the highest-Appeal lesson use the exact three drinks selected in the previous step.
 - Calculated every displayed Appeal score from the shared rules engine.
+
+## v0.5.6c-prompt7 — bartender choice hotfix
+
+- Made Switch Bartender open a real three-bartender selection inside lesson 6.
+- Requires choosing a replacement before continuing and displays the resulting specialty and token cost.
+- Added Cancel Switch and Save Token so both legal strategic choices remain available.
