@@ -1,29 +1,54 @@
-# Locked Development Roadmap
+(function(root,factory){
+  const rules=typeof module==='object'&&module.exports?require('./rules.js'):root.BLC_RULES;
+  const api=factory(rules);
+  if(typeof module==='object'&&module.exports)module.exports=api;
+  root.BLC_AI=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(R){
+  const DIFFICULTIES={
+    easy:{name:'Easy',description:'Relaxed play with occasional mistakes.'},
+    normal:{name:'Normal',description:'Reads customers and uses price tiebreakers.'},
+    hard:{name:'Hard',description:'Optimizes every legal choice and plans switch tokens.'}
+  };
 
-1. Audit current build — complete in prior project history.
-2. Separate maintainable source — complete in prior project history.
-3. Implement v0.5 rules and tests — complete.
-4. Add and validate the saved 30-card deck builder — complete.
-4.1 Improve contrast, selection feedback, mobile layout, button states, and accessibility without changing gameplay — included in this reconstruction.
-5. Add Easy, Normal, and Hard AI.
-6. Complete private local hotseat PvP flow.
-7. Add an interactive tutorial.
-8. Audit all drink, customer, and bartender data.
-9. Remove artificial duplicate content and strengthen card roles.
-10. Create a deterministic shared simulation engine.
-11. Run a 100,000-game baseline balance study.
-12. Apply the smallest evidence-based balance patch.
-13. Iterate until balance targets are met.
-14. Redesign the commercial-style interface.
-15. Approve a consistent art specification.
-16. Generate production art in batches of eight.
-17. Add sound and animation.
-18. Run full functional QA.
-19. Fix all critical and major bugs.
-20. Run regression testing against official rules.
-21. Create the production itch.io HTML ZIP.
-22. Create the development archive.
-23. Prepare final itch.io page copy.
-24. Perform the final exact-ZIP release audit.
+  function normalizedDifficulty(value){return DIFFICULTIES[value]?value:'normal'}
+  function randomIndex(length,rng){return Math.max(0,Math.min(length-1,Math.floor(rng()*length)))}
+  function shuffled(items,rng){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=randomIndex(i+1,rng);[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
+  function drinkValue(drink,customer,bartender){return R.appeal(drink,customer,bartender)*100+drink.price}
 
-Numbering is locked. Decimal prompts may be added without renumbering the main roadmap. No prompt is complete until its build and acceptance checks are verified.
+  function chooseDrinks(hand,customer,bartender,difficulty='normal',rng=Math.random){
+    const level=normalizedDifficulty(difficulty);
+    if(!Array.isArray(hand)||hand.length<R.CHOOSE)throw new Error('AI requires at least three cards.');
+    if(level==='easy')return shuffled(hand,rng).slice(0,R.CHOOSE);
+    const ranked=[...hand].sort((a,b)=>drinkValue(b,customer,bartender)-drinkValue(a,customer,bartender));
+    if(level==='normal'&&hand.length>R.CHOOSE&&rng()<0.18){
+      const mistake=R.CHOOSE-1;
+      [ranked[mistake],ranked[R.CHOOSE]]=[ranked[R.CHOOSE],ranked[mistake]];
+    }
+    return ranked.slice(0,R.CHOOSE);
+  }
+
+  function specialtySupport(deck,specialty){
+    if(!Array.isArray(deck)||!deck.length)return 0;
+    return deck.reduce((sum,drink)=>sum+([drink.spirit].concat(drink.styles||[]).includes(specialty)?1+drink.price/100:0),0);
+  }
+  function distanceToNextToken(tips){const next=R.THRESHOLDS.find(value=>value>tips);return next===undefined?Infinity:next-tips}
+
+  function chooseBartender({current,bartenders,deck,tokens,tips,difficulty='normal',rng=Math.random}){
+    const level=normalizedDifficulty(difficulty);
+    if(!current||!Array.isArray(bartenders)||!bartenders.length||tokens<=0)return current;
+    if(level==='easy'){
+      if(rng()>=0.14)return current;
+      const alternatives=bartenders.filter(b=>b!==current);
+      return alternatives[randomIndex(alternatives.length,rng)]||current;
+    }
+    const ranked=bartenders.map(b=>({bartender:b,support:specialtySupport(deck,b.specialty)})).sort((a,b)=>b.support-a.support);
+    const best=ranked[0],currentSupport=specialtySupport(deck,current.specialty),gain=best.support-currentSupport;
+    if(!best||best.bartender===current)return current;
+    if(level==='normal')return gain>=1.5?best.bartender:current;
+    const nearToken=distanceToNextToken(tips)<=5;
+    const requiredGain=tokens>1?0.7:(nearToken?1.2:2.2);
+    return gain>=requiredGain?best.bartender:current;
+  }
+
+  return{DIFFICULTIES,chooseDrinks,chooseBartender,drinkValue,specialtySupport,distanceToNextToken};
+});

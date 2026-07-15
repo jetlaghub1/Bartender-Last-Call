@@ -1,13 +1,18 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Bartender: Last Call</title>
-  <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-  <header><div><p class="eyebrow">JETLAGHUB PRESENTS</p><h1>Bartender: <span>Last Call</span></h1></div><button id="sound" class="ghost" aria-pressed="false">Sound: On</button></header>
-  <main id="app" tabindex="-1"></main>
-  <footer>v0.5.3-prompt4.1 · First to $50 in tips wins</footer>
-  <script src="js/data.js"></script><script src="js/rules.js"></script><script src="js/app.js"></script>
-</body></html>
+const assert=require('assert');
+const fs=require('fs');
+const css=fs.readFileSync('css/styles.css','utf8');
+const app=fs.readFileSync('js/app.js','utf8');
+
+assert(css.includes('.player-two .card.selected'),'Player 2 needs a distinct selected-card style.');
+assert(css.includes(':focus-visible'),'Keyboard focus must remain visible.');
+assert(css.includes('prefers-reduced-motion'),'Reduced-motion preferences must be respected.');
+assert(css.includes('min-height:44px'),'Controls need mobile-sized touch targets.');
+assert(app.includes("'player-one':'player-two'"),'Player identity classes must be assigned during selection.');
+assert(app.includes('Choose ${3-p.selected.length} More'),'Lock In must explain its disabled state.');
+assert(app.includes('result-row ${i===winner'), 'Round results must highlight the winner.');
+assert(css.includes('.price{position:static;margin-top:auto'), 'Card prices must remain below variable-length text.');
+assert(app.includes('function instantiate(ids)'), 'Each physical drink copy must receive a unique identity.');
+assert(app.includes('data-instance="${d.instanceId}"'), 'Rendered cards must expose their unique instance identity.');
+assert(app.includes('if(p.tokens<=0){finishSwitch();return}'), 'Bartender selection must skip players without a switch token.');
+assert(app.includes("state.mode==='pvp'&&state.players[1].tokens>0"), 'PvP pass screen must require a Player 2 switch token.');
+console.log('All Prompt 4.1 UI contract tests passed.');
