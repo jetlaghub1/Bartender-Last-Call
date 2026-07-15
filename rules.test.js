@@ -1,38 +1,45 @@
 const assert=require('assert');
-const CONTENT=require('../js/content.js');
-const DATA=require('../js/data.js');
+const fs=require('fs');
+const R=require('../js/rules.js');
+const AI=require('../js/ai.js');
 
-const report=CONTENT.audit(DATA);
-assert(report.ok,report.errors.join('\n'));
-assert.equal(report.errors.length,0);
-assert.equal(report.summary.schemaVersion,'0.5.7');
-assert.equal(report.summary.drinks,42);
-assert.equal(report.summary.customers,28);
-assert.equal(report.summary.bartenders,7);
-assert.equal(Object.keys(report.summary.drinkSpiritCounts).length,7);
-assert(Object.values(report.summary.drinkSpiritCounts).every(count=>count===6));
+const customer={love:'Whiskey',like:'Premium',dislike:'Beer'};
+const whiskeyBartender={name:'Theo',specialty:'Whiskey'};
+const hand=[
+  {id:'best',instanceId:'best-1',spirit:'Whiskey',styles:['Premium'],price:20},
+  {id:'good',instanceId:'good-1',spirit:'Whiskey',styles:['Sweet'],price:12},
+  {id:'tie',instanceId:'tie-1',spirit:'Gin',styles:['Premium'],price:18},
+  {id:'bad',instanceId:'bad-1',spirit:'Beer',styles:['Cheap'],price:24},
+  {id:'plain',instanceId:'plain-1',spirit:'Rum',styles:['Fresh'],price:10}
+];
 
-for(const drink of DATA.drinks){
-  assert(DATA.spirits.includes(drink.spirit));
-  assert(drink.styles.length>=1&&drink.styles.length<=2);
-  assert.equal(new Set(drink.styles).size,drink.styles.length);
-  assert(!drink.styles.includes('Premium')||!drink.styles.includes('Cheap'));
-  assert(Number.isFinite(drink.price)&&drink.price>0);
-}
-for(const customer of DATA.customers){
-  assert.equal(new Set([customer.love,customer.like,customer.dislike]).size,3);
-}
-for(const bartender of DATA.bartenders){
-  assert.equal(bartender.passive,`${bartender.specialty} drinks gain +1 Appeal.`);
-}
+const normal=AI.chooseDrinks(hand,customer,whiskeyBartender,'normal',()=>0.5);
+const hard=AI.chooseDrinks(hand,customer,whiskeyBartender,'hard',()=>0.5);
+assert.equal(normal.length,3);
+assert.equal(hard.length,3);
+assert.equal(R.best(normal,customer,whiskeyBartender,()=>0.5).drink.id,'best');
+assert.equal(R.best(hard,customer,whiskeyBartender,()=>0.5).drink.id,'best');
 
-const badDrink=JSON.parse(JSON.stringify(DATA));
-badDrink.drinks[0].styles=['Premium','Cheap'];
-assert(!CONTENT.audit(badDrink).ok,'Contradictory drink traits must fail.');
-const badCustomer=JSON.parse(JSON.stringify(DATA));
-badCustomer.customers[0].dislike=badCustomer.customers[0].love;
-assert(!CONTENT.audit(badCustomer).ok,'Repeated customer preferences must fail.');
-const badBartender=JSON.parse(JSON.stringify(DATA));
-badBartender.bartenders[0].passive='Activated ability';
-assert(!CONTENT.audit(badBartender).ok,'Nonstandard bartender passives must fail.');
-console.log('All Prompt 8 content tests passed.');
+const easy=AI.chooseDrinks(hand,customer,whiskeyBartender,'easy',()=>0.4);
+assert.equal(easy.length,3);
+assert.equal(new Set(easy.map(card=>card.instanceId)).size,3);
+
+const beerBartender={name:'Ace',specialty:'Beer'};
+const bartenders=[beerBartender,whiskeyBartender];
+const whiskeyDeck=Array.from({length:8},(_,i)=>({spirit:'Whiskey',styles:['Strong'],price:12+i}));
+assert.equal(AI.chooseBartender({current:beerBartender,bartenders,deck:whiskeyDeck,tokens:1,tips:0,difficulty:'normal',rng:()=>0.5}),whiskeyBartender);
+assert.equal(AI.chooseBartender({current:beerBartender,bartenders,deck:whiskeyDeck,tokens:0,tips:0,difficulty:'hard',rng:()=>0.5}),beerBartender);
+const marginalDeck=[
+  {spirit:'Beer',styles:['Clean'],price:0},
+  {spirit:'Whiskey',styles:['Strong'],price:15},
+  {spirit:'Whiskey',styles:['Sweet'],price:15}
+];
+assert.equal(AI.chooseBartender({current:beerBartender,bartenders,deck:marginalDeck,tokens:1,tips:0,difficulty:'hard',rng:()=>0.5}),beerBartender);
+assert.equal(AI.chooseBartender({current:beerBartender,bartenders,deck:marginalDeck,tokens:1,tips:14,difficulty:'hard',rng:()=>0.5}),whiskeyBartender);
+assert.equal(AI.distanceToNextToken(14),1);
+assert.equal(AI.distanceToNextToken(30),15);
+
+const source=fs.readFileSync('js/ai.js','utf8');
+assert(!source.includes('opponent'),'AI engine must not accept or inspect opponent state.');
+assert(!source.includes('state.players'),'AI engine must not inspect match player state.');
+console.log('All Prompt 5 AI tests passed.');

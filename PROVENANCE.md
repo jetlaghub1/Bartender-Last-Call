@@ -1,93 +1,42 @@
-# Changelog
+# Content quality pass — v0.5.8
 
-## v0.5.3 — GitHub baseline
+## Decision
 
-- Reconstructed a playable source repository from the documented v0.5.2a state.
-- Added official rules as a reusable testable module.
-- Included AI and local hotseat modes, bartender switching, scoring, payouts, deck validation, deck persistence, and a starter deck.
-- Applied Prompt 4.1 contrast, selected states, responsive layout, clearer Lock In feedback, and visible keyboard focus.
-- Added repository documentation and zero-dependency rules tests.
+Keep **42 drinks**, **28 customers**, and **7 bartenders**.
 
-## v0.5.3-prompt4.1 — Selection UI corrective pass
+The 42-card drink pool is large enough to support a legal 30-card deck and meaningful trait coverage without pretending that renamed numerical variants are finished content. The IDs `d1` through `d42` were preserved so existing browser-saved decks remain valid.
 
-- Added distinct green Player 1 and red Player 2 selected-card states.
-- Added bartender portrait icons, clearer specialty text, and selected-state accessibility.
-- Improved enabled and disabled Lock In feedback, including remaining-card guidance.
-- Strengthened mobile touch targets, stacking, contrast, focus outlines, and reduced-motion support.
-- Added clearer gold winner treatment and larger tip payouts on round results.
+## Drinks
 
-## v0.5.3a-prompt4.1 — itch.io packaging hotfix
+All 21 numbered drink variants were replaced with unique names and deliberate profiles. The final structure is:
 
-- Rebuilt the browser release with standards-compliant forward-slash ZIP paths so itch.io can resolve the CSS and JavaScript files.
-- Kept `index.html` at the ZIP root and verified every local asset reference against the exact archive.
+- 6 drinks for each of the 7 Spirits
+- 7 focused one-Style drinks, one per Spirit
+- 35 two-Style bridge drinks
+- 0 duplicate names
+- 0 duplicate mechanical profiles
+- 0 Premium/Cheap contradictions
+- Style coverage between 4 and 8 drinks per Style
+- Prices from $8 to $22
 
-## v0.5.3b-prompt4.1 — card price layout hotfix
+The focused cards create narrow customer matches. The bridge cards connect two preferences. Lower-price cards support safe/budget choices; $20–$22 cards offer stronger payout and price-tiebreaker upside without adding Appeal directly.
 
-- Replaced the absolutely positioned card price with a flexible footer below the card text.
-- Added spacing and a divider so names, traits, and prices cannot overlap on desktop or mobile.
+## Customers
 
-## v0.5.3c-prompt4.1 — duplicate-selection hotfix
+All 28 numbered customers were replaced with distinct identities such as **Whiskey Collector**, **Night Shift Nurse**, **Food Truck Cook**, and **Quiet Celebrant**.
 
-- Gave every physical copy of a drink card a unique instance identity.
-- Fixed duplicate drink copies appearing selected together while only counting as one selection.
-- Preserved the official token-based bartender switching rule.
+- Every customer has a unique Love/Like/Dislike profile.
+- Every allowed Spirit and Style appears in the customer preference pool.
+- No customer repeats a trait across Love, Like, and Dislike.
 
-## v0.5.3d-prompt4.1 — conditional bartender prompt
+## Bartenders
 
-- The bartender selection phase now appears only when that player owns a switch token.
-- Local PvP skips the bartender pass-device screen when Player 2 has no token.
-- The Keep button now clearly explains that the token will be saved.
+The seven existing Spirit specialists remain unchanged. Adding twelve Style specialists now would inflate the roster before the simulation phase and create new balance work without solving a core gameplay problem. Style-specialist bartenders remain a possible later expansion after the current roster is measured.
 
-## v0.5.4-prompt5 — AI difficulty system
+## Starter deck
 
-- Added Easy, Normal, and Hard difficulty selection before AI matches.
-- Moved AI behavior into a reusable, deterministic engine.
-- Added customer-aware Appeal evaluation and price-tiebreaker logic.
-- Added deck-aware bartender switching and Hard token conservation.
-- Kept human hands and locked selections outside every AI decision input.
-- Added automated AI behavior and privacy contract tests.
+The former “first ten cards” starter logic was replaced with a curated 10-card pool covering all seven Spirits. Three copies of each card create a legal 30-card deck while preserving broad customer coverage.
 
-## v0.5.5-prompt6 — private local PvP
+## Remaining work
 
-- Fixed the post-lock handoff that incorrectly reopened Player 2 bartender selection.
-- Added privacy screens before Player 1 and Player 2 hands are rendered.
-- Added a pass-back step after Player 2 bartender setup.
-- Added a neutral both-locked screen with an explicit shared Reveal Drinks action.
-- Ensured the confirmation screen exposes neither hand nor selected drink.
-- Added local PvP flow and privacy contract tests.
-
-## v0.5.6-prompt7 — interactive tutorial
-
-- Added an optional first-visit tutorial welcome with Skip for Now.
-- Added eight short interactive lessons covering every locked tutorial topic.
-- Added progress tracking, immediate answer feedback, and gated lesson advancement.
-- Saved tutorial completion locally and added replay controls to the menu and rules screen.
-- Added an Easy AI practice option after completion.
-- Added deterministic tutorial logic and UI contract tests.
-
-## v0.5.6a-prompt7 — deck lesson hotfix
-
-- Replaced the tutorial's generic Add Card counter with selectable drink cards.
-- Added visible copy counts, disabled three-copy-limit cards, remaining deck slots, and Reset Choices.
-- Added rule tests for copy limits and full-deck blocking.
-
-## v0.5.6b-prompt7 — customer context hotfix
-
-- Added the customer preferences and bartender specialty to the three-drink selection lesson.
-- Made the highest-Appeal lesson use the exact three drinks selected in the previous step.
-- Calculated every displayed Appeal score from the shared rules engine.
-
-## v0.5.6c-prompt7 — bartender choice hotfix
-
-- Made Switch Bartender open a real three-bartender selection inside lesson 6.
-- Requires choosing a replacement before continuing and displays the resulting specialty and token cost.
-- Added Cancel Switch and Save Token so both legal strategic choices remain available.
-
-## v0.5.7-prompt8 — content audit
-
-- Added a reusable content schema and audit engine loaded by the browser game.
-- Converted the data source into a browser/Node-compatible validated module.
-- Verified all 42 drinks, 28 customers, and 7 bartenders with zero schema errors.
-- Added duplicate profile, contradiction, preference, price, and passive validation.
-- Documented exact distributions and four honest content-variety warnings for Prompt 9.
-- Added automated valid-data and invalid-fixture content tests.
+Content is now structurally meaningful, but numerical balance has not yet been proven. Prompts 10–13 will measure card use, customer bias, bartender win rates, and starter-deck performance before further content changes.
