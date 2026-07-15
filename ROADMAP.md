@@ -1,5 +1,8 @@
-# Source provenance
+# Content data changelog — v0.5.7
 
-The referenced ChatGPT conversation described multiple generated ZIPs, but those binary files were not attached to this workspace and could not be recovered. This repository was therefore reconstructed from the detailed feature and rule record in that conversation.
-
-It intentionally includes functional source code and tests. It does not claim that unavailable historical assets or code were recovered byte-for-byte. The version begins a reliable GitHub source of truth for subsequent numbered prompts.
+- Converted `data.js` into a browser/Node-compatible source module.
+- Added schema version `0.5.7`.
+- Added automatic validation during data loading; invalid content now stops the build instead of silently entering gameplay.
+- Added validation for allowed vocabularies, trait counts, contradictory traits, prices, duplicate IDs/names/profiles, customer preference uniqueness, bartender specialties, and standardized passives.
+- Confirmed that the existing 42 drinks, 28 customers, and 7 bartenders required no record-level corrections.
+- Recorded four non-blocking variety warnings for Prompt 9 rather than disguising generated variants as finished unique content.

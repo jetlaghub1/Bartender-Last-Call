@@ -82,3 +82,12 @@
 - Made Switch Bartender open a real three-bartender selection inside lesson 6.
 - Requires choosing a replacement before continuing and displays the resulting specialty and token cost.
 - Added Cancel Switch and Save Token so both legal strategic choices remain available.
+
+## v0.5.7-prompt8 — content audit
+
+- Added a reusable content schema and audit engine loaded by the browser game.
+- Converted the data source into a browser/Node-compatible validated module.
+- Verified all 42 drinks, 28 customers, and 7 bartenders with zero schema errors.
+- Added duplicate profile, contradiction, preference, price, and passive validation.
+- Documented exact distributions and four honest content-variety warnings for Prompt 9.
+- Added automated valid-data and invalid-fixture content tests.

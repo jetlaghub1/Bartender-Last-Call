@@ -1,54 +1,32 @@
 (function(root,factory){
-  const rules=typeof module==='object'&&module.exports?require('./rules.js'):root.BLC_RULES;
-  const api=factory(rules);
-  if(typeof module==='object'&&module.exports)module.exports=api;
-  root.BLC_AI=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(R){
-  const DIFFICULTIES={
-    easy:{name:'Easy',description:'Relaxed play with occasional mistakes.'},
-    normal:{name:'Normal',description:'Reads customers and uses price tiebreakers.'},
-    hard:{name:'Hard',description:'Optimizes every legal choice and plans switch tokens.'}
-  };
-
-  function normalizedDifficulty(value){return DIFFICULTIES[value]?value:'normal'}
-  function randomIndex(length,rng){return Math.max(0,Math.min(length-1,Math.floor(rng()*length)))}
-  function shuffled(items,rng){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=randomIndex(i+1,rng);[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
-  function drinkValue(drink,customer,bartender){return R.appeal(drink,customer,bartender)*100+drink.price}
-
-  function chooseDrinks(hand,customer,bartender,difficulty='normal',rng=Math.random){
-    const level=normalizedDifficulty(difficulty);
-    if(!Array.isArray(hand)||hand.length<R.CHOOSE)throw new Error('AI requires at least three cards.');
-    if(level==='easy')return shuffled(hand,rng).slice(0,R.CHOOSE);
-    const ranked=[...hand].sort((a,b)=>drinkValue(b,customer,bartender)-drinkValue(a,customer,bartender));
-    if(level==='normal'&&hand.length>R.CHOOSE&&rng()<0.18){
-      const mistake=R.CHOOSE-1;
-      [ranked[mistake],ranked[R.CHOOSE]]=[ranked[R.CHOOSE],ranked[mistake]];
-    }
-    return ranked.slice(0,R.CHOOSE);
-  }
-
-  function specialtySupport(deck,specialty){
-    if(!Array.isArray(deck)||!deck.length)return 0;
-    return deck.reduce((sum,drink)=>sum+([drink.spirit].concat(drink.styles||[]).includes(specialty)?1+drink.price/100:0),0);
-  }
-  function distanceToNextToken(tips){const next=R.THRESHOLDS.find(value=>value>tips);return next===undefined?Infinity:next-tips}
-
-  function chooseBartender({current,bartenders,deck,tokens,tips,difficulty='normal',rng=Math.random}){
-    const level=normalizedDifficulty(difficulty);
-    if(!current||!Array.isArray(bartenders)||!bartenders.length||tokens<=0)return current;
-    if(level==='easy'){
-      if(rng()>=0.14)return current;
-      const alternatives=bartenders.filter(b=>b!==current);
-      return alternatives[randomIndex(alternatives.length,rng)]||current;
-    }
-    const ranked=bartenders.map(b=>({bartender:b,support:specialtySupport(deck,b.specialty)})).sort((a,b)=>b.support-a.support);
-    const best=ranked[0],currentSupport=specialtySupport(deck,current.specialty),gain=best.support-currentSupport;
-    if(!best||best.bartender===current)return current;
-    if(level==='normal')return gain>=1.5?best.bartender:current;
-    const nearToken=distanceToNextToken(tips)<=5;
-    const requiredGain=tokens>1?0.7:(nearToken?1.2:2.2);
-    return gain>=requiredGain?best.bartender:current;
-  }
-
-  return{DIFFICULTIES,chooseDrinks,chooseBartender,drinkValue,specialtySupport,distanceToNextToken};
+  const validator=typeof module==='object'&&module.exports?require('./content.js'):root.BLC_CONTENT;
+  const data=factory();
+  const report=validator.audit(data);
+  if(!report.ok)throw new Error(`Content validation failed: ${report.errors.join(' | ')}`);
+  data.audit=report;
+  if(typeof module==='object'&&module.exports)module.exports=data;
+  root.BLC_DATA=data;
+})(typeof globalThis!=='undefined'?globalThis:this,function(){
+  const spirits=['Beer','Vodka','Whiskey','Rum','Gin','Tequila','Wine'];
+  const styles=['Premium','Cheap','Strong','Sweet','Bitter','Fruity','Fresh','Sour','Creamy','Clean','Savory','Spicy'];
+  const names=['Golden Lager','Citrus Collins','Old Fashioned','Midnight Mojito','Garden Gimlet','Sunset Paloma','Velvet Merlot','House Highball','Spiced Daiquiri','Neon Martini','Bitter Bloom','Cream Soda Flip','Smoked Sour','Market Mule','Clean Cut','Tropical Fizz','Pepper Punch','Cellar Select','Last Call Lager','Backbar Special','City Spritz'];
+  const drinks=Array.from({length:42},(_,i)=>({
+    id:`d${i+1}`,
+    name:names[i%names.length]+(i>=names.length?` ${Math.floor(i/names.length)+1}`:''),
+    spirit:spirits[i%spirits.length],
+    styles:[styles[i%styles.length],styles[(i+5)%styles.length]],
+    price:8+(i%8)*2
+  }));
+  const customers=Array.from({length:28},(_,i)=>({
+    name:`${['Night Owl','The Critic','Roadie','Regular','Foodie','Tourist','Musician'][i%7]} ${i+1}`,
+    love:i%2?spirits[i%spirits.length]:styles[i%styles.length],
+    like:i%2?styles[(i+3)%styles.length]:spirits[(i+2)%spirits.length],
+    dislike:styles[(i+7)%styles.length]
+  }));
+  const bartenders=spirits.map((specialty,i)=>({
+    name:['Ace','Mara','Theo','June','Nico','Sol','Rae'][i],
+    specialty,
+    passive:`${specialty} drinks gain +1 Appeal.`
+  }));
+  return{schemaVersion:'0.5.7',spirits,styles,drinks,customers,bartenders};
 });

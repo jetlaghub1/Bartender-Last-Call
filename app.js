@@ -1,37 +1,54 @@
-# Validation report
+(function(root,factory){
+  const rules=typeof module==='object'&&module.exports?require('./rules.js'):root.BLC_RULES;
+  const api=factory(rules);
+  if(typeof module==='object'&&module.exports)module.exports=api;
+  root.BLC_AI=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(R){
+  const DIFFICULTIES={
+    easy:{name:'Easy',description:'Relaxed play with occasional mistakes.'},
+    normal:{name:'Normal',description:'Reads customers and uses price tiebreakers.'},
+    hard:{name:'Hard',description:'Optimizes every legal choice and plans switch tokens.'}
+  };
 
-Validation date: 2026-07-15
+  function normalizedDifficulty(value){return DIFFICULTIES[value]?value:'normal'}
+  function randomIndex(length,rng){return Math.max(0,Math.min(length-1,Math.floor(rng()*length)))}
+  function shuffled(items,rng){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=randomIndex(i+1,rng);[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
+  function drinkValue(drink,customer,bartender){return R.appeal(drink,customer,bartender)*100+drink.price}
 
-- JavaScript syntax: PASS (`data.js`, `rules.js`, `app.js`, and test file)
-- Appeal calculation (Love +3, Like +2, specialty +1): PASS
-- Winner and loser payout examples: PASS
-- Multiple switch thresholds crossed at once: PASS
-- 29-card deck rejection: PASS
-- Four-copy deck rejection: PASS
-- Browser asset references: PASS by repository inspection
-- Prompt 4.1 UI contract checks: PASS (distinct player colors, focus visibility, reduced motion, touch-target sizing, Lock In guidance, and winner highlighting)
-- Prompt 5 syntax checks: PASS (`ai.js`, updated `app.js`, and AI tests)
-- Difficulty availability: PASS (Easy, Normal, and Hard)
-- Normal and Hard customer-aware drink choice: PASS
-- Bartender switch legality and zero-token handling: PASS
-- Hard future-token conservation behavior: PASS
-- Hidden-player-state isolation contract: PASS
-- Prompt 6 Player 1 setup handoff: PASS
-- Prompt 6 Player 1-to-Player 2 private drink handoff: PASS
-- Prompt 6 bartender phase does not repeat after drink lock: PASS
-- Prompt 6 both-locked confirmation and explicit reveal: PASS
-- Prompt 6 confirmation exposes no hand or selected drink: PASS
-- Prompt 7 eight-lesson curriculum: PASS
-- Prompt 7 Appeal and payout examples match shared rules: PASS
-- Prompt 7 exactly-three and 30-card gates: PASS
-- Prompt 7 first-visit, skip, completion, replay, and Easy practice contracts: PASS
-- Prompt 7 deck lesson selectable-card interaction: PASS
-- Prompt 7 live copy counts, three-copy blocking, full-deck blocking, and reset controls: PASS
-- Prompt 7 customer and bartender context on selection/service lessons: PASS
-- Prompt 7 service lesson uses the player's actual selected cards: PASS
-- Prompt 7 displayed practice Appeal values come from shared rules and are uniquely ranked: PASS
-- Prompt 7 switch lesson exposes three replacement bartenders with unique specialties: PASS
-- Prompt 7 switch lesson requires save or replacement selection before continuing: PASS
-- Prompt 7 token cost, new specialty, and cancel-to-save behavior: PASS
+  function chooseDrinks(hand,customer,bartender,difficulty='normal',rng=Math.random){
+    const level=normalizedDifficulty(difficulty);
+    if(!Array.isArray(hand)||hand.length<R.CHOOSE)throw new Error('AI requires at least three cards.');
+    if(level==='easy')return shuffled(hand,rng).slice(0,R.CHOOSE);
+    const ranked=[...hand].sort((a,b)=>drinkValue(b,customer,bartender)-drinkValue(a,customer,bartender));
+    if(level==='normal'&&hand.length>R.CHOOSE&&rng()<0.18){
+      const mistake=R.CHOOSE-1;
+      [ranked[mistake],ranked[R.CHOOSE]]=[ranked[R.CHOOSE],ranked[mistake]];
+    }
+    return ranked.slice(0,R.CHOOSE);
+  }
 
-The automated in-app browser could not open a local `file://` URL because of its security policy, so no claim of automated visual browser completion is made. The application deliberately has no external dependencies and is designed to launch by opening `index.html` directly.
+  function specialtySupport(deck,specialty){
+    if(!Array.isArray(deck)||!deck.length)return 0;
+    return deck.reduce((sum,drink)=>sum+([drink.spirit].concat(drink.styles||[]).includes(specialty)?1+drink.price/100:0),0);
+  }
+  function distanceToNextToken(tips){const next=R.THRESHOLDS.find(value=>value>tips);return next===undefined?Infinity:next-tips}
+
+  function chooseBartender({current,bartenders,deck,tokens,tips,difficulty='normal',rng=Math.random}){
+    const level=normalizedDifficulty(difficulty);
+    if(!current||!Array.isArray(bartenders)||!bartenders.length||tokens<=0)return current;
+    if(level==='easy'){
+      if(rng()>=0.14)return current;
+      const alternatives=bartenders.filter(b=>b!==current);
+      return alternatives[randomIndex(alternatives.length,rng)]||current;
+    }
+    const ranked=bartenders.map(b=>({bartender:b,support:specialtySupport(deck,b.specialty)})).sort((a,b)=>b.support-a.support);
+    const best=ranked[0],currentSupport=specialtySupport(deck,current.specialty),gain=best.support-currentSupport;
+    if(!best||best.bartender===current)return current;
+    if(level==='normal')return gain>=1.5?best.bartender:current;
+    const nearToken=distanceToNextToken(tips)<=5;
+    const requiredGain=tokens>1?0.7:(nearToken?1.2:2.2);
+    return gain>=requiredGain?best.bartender:current;
+  }
+
+  return{DIFFICULTIES,chooseDrinks,chooseBartender,drinkValue,specialtySupport,distanceToNextToken};
+});

@@ -1,41 +1,6 @@
-const assert=require('assert');
-const fs=require('fs');
-const T=require('../js/tutorial.js');
-
-assert.equal(T.STEPS.length,8);
-assert.deepEqual(T.STEPS.map(step=>step.id),['customer','appeal','selection','service','tips','switch','deck','victory']);
-assert.equal(T.scoringExample().appeal,6);
-const practice=T.practiceScenario();
-assert.equal(practice.customer.name,'The Night Owl');
-assert.equal(practice.bartender.specialty,'Whiskey');
-assert.equal(new Set(practice.drinks.map(drink=>drink.appeal)).size,practice.drinks.length);
-const switchLesson=T.switchScenario();
-assert.equal(switchLesson.current.name,'Theo');
-assert.equal(switchLesson.options.length,3);
-assert.equal(new Set(switchLesson.options.map(b=>b.specialty)).size,3);
-assert(T.exactThree(3));
-assert(!T.exactThree(2));
-assert(T.legalDeckCount(30));
-assert(!T.legalDeckCount(29));
-assert(T.canAddCopy(2,29));
-assert(!T.canAddCopy(3,29));
-assert(!T.canAddCopy(2,30));
-assert.equal(T.winnerTip(20),7);
-assert.equal(T.winTarget,50);
-assert.equal(T.maxCopies,3);
-
-const app=fs.readFileSync('js/app.js','utf8');
-const index=fs.readFileSync('index.html','utf8');
-assert(app.includes("localStorage.getItem('blc.tutorialSeen')"),'First visit must offer the tutorial.');
-assert(app.includes('Skip for Now'),'Tutorial must be skippable.');
-assert(app.includes('Play Tutorial'),'Tutorial must be replayable.');
-assert(app.includes("setTutorialFlag('blc.tutorialComplete','1')"),'Completion must be saved.');
-assert(app.includes("start('ai','easy')"),'Completion must offer an Easy AI practice game.');
-assert(app.includes('data-deck-add="${card.id}"'),'Deck lesson must require selecting actual drink cards.');
-assert(app.includes('Copy Limit Reached'),'Deck lesson must demonstrate the three-copy limit.');
-assert(app.includes('const practice=T.practiceScenario()'),'Selection and service lessons must use a visible customer scenario.');
-assert(app.includes('practice.drinks.filter((drink,i)=>tutorial.selection.has(i))'),'Service lesson must use the player’s actual three selections.');
-assert(app.includes('data-tutorial-bartender="${b.id}"'),'Switch lesson must require an actual replacement bartender selection.');
-assert(app.includes("complete=saved||Boolean(selected)"),'Switch lesson cannot continue until the player saves or selects a bartender.');
-assert(index.indexOf('js/tutorial.js')<index.indexOf('js/app.js'),'Tutorial logic must load before the app.');
-console.log('All Prompt 7 tutorial tests passed.');
+.DS_Store
+Thumbs.db
+node_modules/
+coverage/
+dist/
+*.log

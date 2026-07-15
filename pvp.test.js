@@ -1,10 +1,45 @@
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;root.BLC_RULES=api})(typeof globalThis!=='undefined'?globalThis:this,function(){
-  const WIN=50,DECK=30,MAX=3,HAND=7,CHOOSE=3,THRESHOLDS=[15,30,45];
-  function traits(d){return[d.spirit].concat(d.styles||[])}
-  function appeal(d,c,b){const t=traits(d);return(t.includes(c.love)?3:0)+(t.includes(c.like)?2:0)+(t.includes(c.dislike)?-2:0)+(t.includes(b.specialty)?1:0)}
-  function best(served,c,b,rng=Math.random){return served.map(d=>({drink:d,appeal:appeal(d,c,b)})).sort((a,z)=>z.appeal-a.appeal||z.drink.price-a.drink.price||(rng()-.5))[0]}
-  function payout(price,won){return won?Math.round(price*.25+2):Math.round(price*.10)}
-  function earned(before,after){return THRESHOLDS.filter(x=>before<x&&after>=x).length}
-  function validateDeck(ids,drinks){if(!Array.isArray(ids)||ids.length!==DECK)return{ok:false,message:`Deck must contain exactly ${DECK} cards.`};const valid=new Set(drinks.map(d=>d.id)),counts={};for(const id of ids){if(!valid.has(id))return{ok:false,message:'Deck contains an unknown card.'};counts[id]=(counts[id]||0)+1;if(counts[id]>MAX)return{ok:false,message:'No more than 3 copies of a drink are allowed.'}}return{ok:true,message:'Legal 30-card deck.'}}
-  return{WIN,DECK,MAX,HAND,CHOOSE,THRESHOLDS,appeal,best,payout,earned,validateDeck};
-});
+const assert=require('assert');
+const fs=require('fs');
+const R=require('../js/rules.js');
+const AI=require('../js/ai.js');
+
+const customer={love:'Whiskey',like:'Premium',dislike:'Beer'};
+const whiskeyBartender={name:'Theo',specialty:'Whiskey'};
+const hand=[
+  {id:'best',instanceId:'best-1',spirit:'Whiskey',styles:['Premium'],price:20},
+  {id:'good',instanceId:'good-1',spirit:'Whiskey',styles:['Sweet'],price:12},
+  {id:'tie',instanceId:'tie-1',spirit:'Gin',styles:['Premium'],price:18},
+  {id:'bad',instanceId:'bad-1',spirit:'Beer',styles:['Cheap'],price:24},
+  {id:'plain',instanceId:'plain-1',spirit:'Rum',styles:['Fresh'],price:10}
+];
+
+const normal=AI.chooseDrinks(hand,customer,whiskeyBartender,'normal',()=>0.5);
+const hard=AI.chooseDrinks(hand,customer,whiskeyBartender,'hard',()=>0.5);
+assert.equal(normal.length,3);
+assert.equal(hard.length,3);
+assert.equal(R.best(normal,customer,whiskeyBartender,()=>0.5).drink.id,'best');
+assert.equal(R.best(hard,customer,whiskeyBartender,()=>0.5).drink.id,'best');
+
+const easy=AI.chooseDrinks(hand,customer,whiskeyBartender,'easy',()=>0.4);
+assert.equal(easy.length,3);
+assert.equal(new Set(easy.map(card=>card.instanceId)).size,3);
+
+const beerBartender={name:'Ace',specialty:'Beer'};
+const bartenders=[beerBartender,whiskeyBartender];
+const whiskeyDeck=Array.from({length:8},(_,i)=>({spirit:'Whiskey',styles:['Strong'],price:12+i}));
+assert.equal(AI.chooseBartender({current:beerBartender,bartenders,deck:whiskeyDeck,tokens:1,tips:0,difficulty:'normal',rng:()=>0.5}),whiskeyBartender);
+assert.equal(AI.chooseBartender({current:beerBartender,bartenders,deck:whiskeyDeck,tokens:0,tips:0,difficulty:'hard',rng:()=>0.5}),beerBartender);
+const marginalDeck=[
+  {spirit:'Beer',styles:['Clean'],price:0},
+  {spirit:'Whiskey',styles:['Strong'],price:15},
+  {spirit:'Whiskey',styles:['Sweet'],price:15}
+];
+assert.equal(AI.chooseBartender({current:beerBartender,bartenders,deck:marginalDeck,tokens:1,tips:0,difficulty:'hard',rng:()=>0.5}),beerBartender);
+assert.equal(AI.chooseBartender({current:beerBartender,bartenders,deck:marginalDeck,tokens:1,tips:14,difficulty:'hard',rng:()=>0.5}),whiskeyBartender);
+assert.equal(AI.distanceToNextToken(14),1);
+assert.equal(AI.distanceToNextToken(30),15);
+
+const source=fs.readFileSync('js/ai.js','utf8');
+assert(!source.includes('opponent'),'AI engine must not accept or inspect opponent state.');
+assert(!source.includes('state.players'),'AI engine must not inspect match player state.');
+console.log('All Prompt 5 AI tests passed.');
