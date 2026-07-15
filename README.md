@@ -1,43 +1,18 @@
-# Bartender: Last Call
+const assert=require('assert');
+const fs=require('fs');
+const css=fs.readFileSync('css/styles.css','utf8');
+const app=fs.readFileSync('js/app.js','utf8');
 
-A playable browser prototype of JetLagHub's competitive bartender strategy card game. This repository is reconstructed from the latest documented working state (v0.5.2a) and includes the Prompt 4.1 readability improvements. It contains real gameplay source, not placeholder-only files.
-
-## Play locally
-
-Open `index.html` in Chrome, Edge, Firefox, or Safari. No installation or network connection is required.
-
-## Current features
-
-- Player vs AI and private local hotseat PvP with protected handoffs and shared reveal
-- Easy, Normal, and Hard AI difficulty modes
-- Official v0.5 Appeal, payout, switch-token, and victory rules
-- Legal 30-card saved deck with a three-copy limit
-- Deck builder, automatic starter deck, and safe storage fallback
-- Responsive, high-contrast selection UI and keyboard focus states
-
-## Repository map
-
-- `index.html` — browser entry point
-- `css/` — responsive presentation
-- `js/data.js` — drinks, customers, and bartenders
-- `js/rules.js` — reusable rules engine
-- `js/app.js` — game flow and interface
-- `tests/` — zero-dependency rules tests
-- `docs/` — official rules, roadmap, provenance, and release notes
-
-## Tests
-
-With Node.js installed, run:
-
-- `node tests/rules.test.js`
-- `node tests/ui-contract.test.js`
-- `node tests/ai.test.js`
-- `node tests/pvp.test.js`
-
-## GitHub upload
-
-Extract the ZIP and upload the contents, not the enclosing folder, so this README appears at the repository root.
-
-## Status
-
-Prompt 6 is included in this package. The next locked milestone is Prompt 7: interactive tutorial. See `docs/ROADMAP.md`.
+assert(css.includes('.player-two .card.selected'),'Player 2 needs a distinct selected-card style.');
+assert(css.includes(':focus-visible'),'Keyboard focus must remain visible.');
+assert(css.includes('prefers-reduced-motion'),'Reduced-motion preferences must be respected.');
+assert(css.includes('min-height:44px'),'Controls need mobile-sized touch targets.');
+assert(app.includes("'player-one':'player-two'"),'Player identity classes must be assigned during selection.');
+assert(app.includes('Choose ${3-p.selected.length} More'),'Lock In must explain its disabled state.');
+assert(app.includes('result-row ${i===winner'), 'Round results must highlight the winner.');
+assert(css.includes('.price{position:static;margin-top:auto'), 'Card prices must remain below variable-length text.');
+assert(app.includes('function instantiate(ids)'), 'Each physical drink copy must receive a unique identity.');
+assert(app.includes('data-instance="${d.instanceId}"'), 'Rendered cards must expose their unique instance identity.');
+assert(app.includes('if(p.tokens<=0){finishSwitch();return}'), 'Bartender selection must skip players without a switch token.');
+assert(app.includes("state.mode==='pvp'&&state.players[1].tokens>0"), 'PvP pass screen must require a Player 2 switch token.');
+console.log('All Prompt 4.1 UI contract tests passed.');

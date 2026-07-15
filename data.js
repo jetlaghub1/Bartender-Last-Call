@@ -1,24 +1,54 @@
-(function(){
-const D=BLC_DATA,R=BLC_RULES,AI=BLC_AI,app=document.querySelector('#app');let state=null,draft=null;const $=(s)=>document.querySelector(s),shuffle=a=>{a=[...a];for(let i=a.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-function starter(){return D.drinks.slice(0,10).flatMap(d=>[d.id,d.id,d.id])}function load(){try{const x=JSON.parse(localStorage.getItem('blc.deck'));if(R.validateDeck(x,D.drinks).ok)return x}catch(e){}return starter()}function save(ids){try{localStorage.setItem('blc.deck',JSON.stringify(ids))}catch(e){}}
-function home(){state=null;app.innerHTML=`<section class="panel hero"><p class="eyebrow">COMPETITIVE STRATEGY CARD GAME</p><h2>Read the room. Pour the perfect drink.</h2><p>Choose three drinks, win customers, switch bartenders, and race to <span class="money">$50</span>.</p><div class="actions"><button id="play-ai">Play vs AI</button><button data-mode="pvp">Local PvP</button><button id="deck" class="ghost">Build Deck</button><button id="rules" class="ghost">How to Play</button></div></section>`;$('#play-ai').onclick=difficultyScreen;document.querySelector('[data-mode="pvp"]').onclick=()=>start('pvp');$('#deck').onclick=builder;$('#rules').onclick=help}
-function difficultyScreen(){app.innerHTML=`<section class="panel hero"><p class="eyebrow">PLAYER VS AI</p><h2>Choose Difficulty</h2><div class="grid difficulty-grid">${Object.entries(AI.DIFFICULTIES).map(([id,level])=>`<button class="card difficulty-card" data-difficulty="${id}"><h3>${level.name}</h3><p>${level.description}</p></button>`).join('')}</div><button id="back" class="ghost">Back</button></section>`;document.querySelectorAll('[data-difficulty]').forEach(button=>button.onclick=()=>start('ai',button.dataset.difficulty));$('#back').onclick=home}
-function start(mode,aiDifficulty='normal'){const ids=load();if(!R.validateDeck(ids,D.drinks).ok)return builder();const aiName=mode==='ai'?`House AI (${AI.DIFFICULTIES[aiDifficulty].name})`:'Player 2';state={mode,aiDifficulty,round:0,customer:null,phase:'switch',players:[make('Player 1',ids),make(aiName,mode==='ai'?shuffle(starter()):ids)],turn:0,log:[]};nextRound()}
-function instantiate(ids){return ids.map((id,i)=>({...D.drinks.find(d=>d.id===id),instanceId:`${id}-${i}-${Math.random().toString(36).slice(2)}`}))}
-function make(name,ids){return{name,tips:0,tokens:1,nextThreshold:0,bartender:D.bartenders[0],deck:shuffle(instantiate(ids)),hand:[],selected:[],served:null}}
-function nextRound(){state.round++;state.customer=null;state.phase='switch';state.turn=0;state.players.forEach(p=>{p.hand=[];p.selected=[];p.served=null});switchScreen()}
-function switchScreen(){const p=state.players[state.turn],playerClass=state.turn===0?'player-one':'player-two';if(p.tokens<=0){finishSwitch();return}if(state.mode==='ai'&&state.turn===1){aiSwitch(p);finishSwitch();return}app.innerHTML=`<section class="panel ${playerClass}"><h2>${p.name}: bartender phase</h2><p>You have <b>${p.tokens}</b> switch token${p.tokens===1?'':'s'}. Switch now or save for a future round.</p><div class="grid">${D.bartenders.map((b,i)=>`<button class="card ${b===p.bartender?'selected':''}" data-b="${i}" aria-pressed="${b===p.bartender}"><span class="portrait" aria-hidden="true">${bartenderIcon(b.specialty)}</span><h3>${b.name}</h3><p class="traits">Specialty: ${b.specialty}</p><p>${b.passive}</p></button>`).join('')}</div><div class="actions"><button id="keep">Keep ${p.bartender.name} and Save Token</button></div></section>`;document.querySelectorAll('[data-b]').forEach(x=>x.onclick=()=>{const b=D.bartenders[+x.dataset.b];if(b===p.bartender)return;p.bartender=b;p.tokens--;finishSwitch()});$('#keep').onclick=finishSwitch}
-function bartenderIcon(s){return({Beer:'🍺',Vodka:'🍸',Whiskey:'🥃',Rum:'🌴',Gin:'🌿',Tequila:'🌵',Wine:'🍷'})[s]||'🍹'}
-function aiSwitch(p){const choice=AI.chooseBartender({current:p.bartender,bartenders:D.bartenders,deck:p.deck,tokens:p.tokens,tips:p.tips,difficulty:state.aiDifficulty});if(choice!==p.bartender){p.bartender=choice;p.tokens--}}
-function finishSwitch(){if(state.turn===0){state.turn=1;if(state.mode==='pvp'&&state.players[1].tokens>0)return passSwitch();return switchScreen()}beginSelection()}
-function passSwitch(){app.innerHTML=`<section class="panel pass"><h2>Pass the device</h2><p>Player 2, choose your bartender privately.</p><button id="ready">Player 2 Ready</button></section>`;$('#ready').onclick=switchScreen}
-function beginSelection(){state.customer=D.customers[Math.floor(Math.random()*D.customers.length)];state.players.forEach(p=>{if(p.deck.length<7)p.deck=shuffle(instantiate(load()));p.hand=p.deck.splice(0,7)});state.turn=0;chooseScreen()}
-function chooseScreen(){const p=state.players[state.turn];state.phase='choose';if(state.mode==='ai'&&state.turn===1){p.selected=AI.chooseDrinks(p.hand,state.customer,p.bartender,state.aiDifficulty);p.served=R.best(p.selected,state.customer,p.bartender);resolve();return}renderChoose(p)}
-function renderChoose(p){const playerClass=state.turn===0?'player-one':'player-two';app.innerHTML=`${scorebar()}<section class="customer"><h2>${state.customer.name}</h2><div class="prefs"><b class="love">♥ Loves ${state.customer.love}</b><b class="like">● Likes ${state.customer.like}</b><b class="dislike">▼ Dislikes ${state.customer.dislike}</b></div></section><section class="panel ${playerClass}"><h2>${p.name} · ${p.bartender.name}</h2><p class="status">Selected <strong id="count">${p.selected.length}/3</strong></p><div class="grid">${p.hand.map((d,i)=>card(d,i,p.selected.includes(d))).join('')}</div><button id="lock" class="lock" ${p.selected.length===3?'':'disabled'}>${p.selected.length===3?'Lock In 3 Drinks':`Choose ${3-p.selected.length} More`}</button></section>`;document.querySelectorAll('[data-card]').forEach(el=>el.onclick=()=>{const d=p.hand[+el.dataset.card],i=p.selected.indexOf(d);if(i>=0)p.selected.splice(i,1);else if(p.selected.length<3)p.selected.push(d);renderChoose(p)});$('#lock').onclick=()=>{p.served=R.best(p.selected,state.customer,p.bartender);if(state.turn===0&&state.mode==='pvp'){state.turn=1;pass()}else if(state.turn===0){state.turn=1;chooseScreen()}else resolve()}}
-function card(d,i,sel){return`<button class="card ${sel?'selected':''}" data-card="${i}" data-instance="${d.instanceId}" aria-pressed="${sel}"><h3>${d.name}</h3><p class="traits">${d.spirit} · ${d.styles.join(' · ')}</p><p class="price">$${d.price}</p></button>`}function pass(){app.innerHTML=`<section class="panel pass"><h2>Pass the device</h2><p>Player 1's choices are hidden. Player 2, tap when ready.</p><button id="ready">Player 2 Ready</button></section>`;$('#ready').onclick=switchScreen}
-function resolve(){const [a,b]=state.players;let winner;if(a.served.appeal>b.served.appeal)winner=0;else if(b.served.appeal>a.served.appeal)winner=1;else if(a.served.drink.price>b.served.drink.price)winner=0;else if(b.served.drink.price>a.served.drink.price)winner=1;else winner=Math.random()<.5?0:1;[a,b].forEach((p,i)=>{const before=p.tips,gain=R.payout(p.served.drink.price,i===winner);p.tips+=gain;p.tokens+=R.earned(before,p.tips)});state.log.unshift(`Round ${state.round}: ${state.players[winner].name} won.`);const gameover=a.tips>=R.WIN||b.tips>=R.WIN;app.innerHTML=`${scorebar()}<section class="panel result"><div class="trophy" aria-hidden="true">🏆</div><h2>${state.players[winner].name} wins the customer</h2>${[a,b].map((p,i)=>`<div class="result-row ${i===winner?'winner':''}"><b>${p.name}</b>: ${p.served.drink.name} · Appeal ${p.served.appeal}<span class="payout">+$${R.payout(p.served.drink.price,i===winner)}</span></div>`).join('')}<p>${gameover?'Last call! Match complete.':'Tips awarded. Ready for the next customer?'}</p><div class="actions"><button id="next">${gameover?'Main Menu':'Next Round'}</button></div></section>`;$('#next').onclick=gameover?home:nextRound}
-function scorebar(){return`<section class="scorebar"><div class="score"><b>${state.players[0].name}</b><br><span class="money">$${state.players[0].tips}</span> · ${state.players[0].tokens} switch</div><strong>Round ${state.round}</strong><div class="score"><b>${state.players[1].name}</b><br><span class="money">$${state.players[1].tips}</span> · ${state.players[1].tokens} switch</div></section>`}
-function builder(){draft=[...load()];renderBuilder()}function renderBuilder(msg=''){const counts=Object.fromEntries(D.drinks.map(d=>[d.id,draft.filter(x=>x===d.id).length]));app.innerHTML=`<section class="panel"><h2>Deck Builder</h2><p>Build exactly 30 cards, with no more than 3 copies of any drink.</p><p class="notice">${msg||`${draft.length}/30 cards · ${R.validateDeck(draft,D.drinks).message}`}</p><div class="builder-list">${D.drinks.map(d=>`<div class="builder-row"><span><b>${d.name}</b><br><small>${d.spirit} · $${d.price}</small></span><button data-minus="${d.id}" class="ghost">−</button><b>${counts[d.id]}</b><button data-plus="${d.id}" ${counts[d.id]>=3?'disabled':''}>+</button></div>`).join('')}</div><div class="actions"><button id="auto">Auto Build</button><button id="save">Save Deck</button><button id="clear" class="ghost">Clear</button><button id="cancel" class="ghost">Cancel</button></div></section>`;document.querySelectorAll('[data-plus]').forEach(b=>b.onclick=()=>{if(draft.length<30)draft.push(b.dataset.plus);renderBuilder()});document.querySelectorAll('[data-minus]').forEach(b=>b.onclick=()=>{const i=draft.indexOf(b.dataset.minus);if(i>=0)draft.splice(i,1);renderBuilder()});$('#auto').onclick=()=>{draft=starter();renderBuilder('Legal starter deck generated.')};$('#clear').onclick=()=>{draft=[];renderBuilder()};$('#cancel').onclick=home;$('#save').onclick=()=>{const v=R.validateDeck(draft,D.drinks);if(!v.ok)return renderBuilder(v.message);save(draft);home()}}
-function help(){app.innerHTML=`<section class="panel hero"><h2>How to Play</h2><p>Each round, a customer Loves one trait (+3), Likes one (+2), and Dislikes one (−2). Your bartender specialty adds +1. Price never adds Appeal; it only breaks ties.</p><p>Choose exactly three drinks. Your highest-Appeal drink is served. The winner earns 25% of its price + $2; the loser earns 10%. Start with one switch token and gain more when crossing $15, $30, and $45. First to $50 wins.</p><button id="back">Back</button></section>`;$('#back').onclick=home}
-$('#sound').onclick=e=>{e.currentTarget.setAttribute('aria-pressed',e.currentTarget.getAttribute('aria-pressed')==='false'?'true':'false');e.currentTarget.textContent=e.currentTarget.getAttribute('aria-pressed')==='true'?'Sound: Off':'Sound: On'};home();
-})();
+(function(root,factory){
+  const rules=typeof module==='object'&&module.exports?require('./rules.js'):root.BLC_RULES;
+  const api=factory(rules);
+  if(typeof module==='object'&&module.exports)module.exports=api;
+  root.BLC_AI=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(R){
+  const DIFFICULTIES={
+    easy:{name:'Easy',description:'Relaxed play with occasional mistakes.'},
+    normal:{name:'Normal',description:'Reads customers and uses price tiebreakers.'},
+    hard:{name:'Hard',description:'Optimizes every legal choice and plans switch tokens.'}
+  };
+
+  function normalizedDifficulty(value){return DIFFICULTIES[value]?value:'normal'}
+  function randomIndex(length,rng){return Math.max(0,Math.min(length-1,Math.floor(rng()*length)))}
+  function shuffled(items,rng){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=randomIndex(i+1,rng);[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
+  function drinkValue(drink,customer,bartender){return R.appeal(drink,customer,bartender)*100+drink.price}
+
+  function chooseDrinks(hand,customer,bartender,difficulty='normal',rng=Math.random){
+    const level=normalizedDifficulty(difficulty);
+    if(!Array.isArray(hand)||hand.length<R.CHOOSE)throw new Error('AI requires at least three cards.');
+    if(level==='easy')return shuffled(hand,rng).slice(0,R.CHOOSE);
+    const ranked=[...hand].sort((a,b)=>drinkValue(b,customer,bartender)-drinkValue(a,customer,bartender));
+    if(level==='normal'&&hand.length>R.CHOOSE&&rng()<0.18){
+      const mistake=R.CHOOSE-1;
+      [ranked[mistake],ranked[R.CHOOSE]]=[ranked[R.CHOOSE],ranked[mistake]];
+    }
+    return ranked.slice(0,R.CHOOSE);
+  }
+
+  function specialtySupport(deck,specialty){
+    if(!Array.isArray(deck)||!deck.length)return 0;
+    return deck.reduce((sum,drink)=>sum+([drink.spirit].concat(drink.styles||[]).includes(specialty)?1+drink.price/100:0),0);
+  }
+  function distanceToNextToken(tips){const next=R.THRESHOLDS.find(value=>value>tips);return next===undefined?Infinity:next-tips}
+
+  function chooseBartender({current,bartenders,deck,tokens,tips,difficulty='normal',rng=Math.random}){
+    const level=normalizedDifficulty(difficulty);
+    if(!current||!Array.isArray(bartenders)||!bartenders.length||tokens<=0)return current;
+    if(level==='easy'){
+      if(rng()>=0.14)return current;
+      const alternatives=bartenders.filter(b=>b!==current);
+      return alternatives[randomIndex(alternatives.length,rng)]||current;
+    }
+    const ranked=bartenders.map(b=>({bartender:b,support:specialtySupport(deck,b.specialty)})).sort((a,b)=>b.support-a.support);
+    const best=ranked[0],currentSupport=specialtySupport(deck,current.specialty),gain=best.support-currentSupport;
+    if(!best||best.bartender===current)return current;
+    if(level==='normal')return gain>=1.5?best.bartender:current;
+    const nearToken=distanceToNextToken(tips)<=5;
+    const requiredGain=tokens>1?0.7:(nearToken?1.2:2.2);
+    return gain>=requiredGain?best.bartender:current;
+  }
+
+  return{DIFFICULTIES,chooseDrinks,chooseBartender,drinkValue,specialtySupport,distanceToNextToken};
+});

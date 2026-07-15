@@ -1,48 +1,16 @@
-# Changelog
+# Prompt 7 interactive tutorial
 
-## v0.5.3 — GitHub baseline
+The tutorial is offered on first visit, can be skipped, and remains replayable from both the main menu and How to Play screen.
 
-- Reconstructed a playable source repository from the documented v0.5.2a state.
-- Added official rules as a reusable testable module.
-- Included AI and local hotseat modes, bartender switching, scoring, payouts, deck validation, deck persistence, and a starter deck.
-- Applied Prompt 4.1 contrast, selected states, responsive layout, clearer Lock In feedback, and visible keyboard focus.
-- Added repository documentation and zero-dependency rules tests.
+## Lessons
 
-## v0.5.3-prompt4.1 — Selection UI corrective pass
+1. **Read the Customer:** tap Love, Like, and Dislike to learn +3, +2, and −2.
+2. **Calculate Appeal:** solve a live scoring example including bartender specialty.
+3. **Choose Three Drinks:** select exactly three cards before continuing.
+4. **Serve the Best Match:** identify which selected drink has the highest Appeal.
+5. **Earn Tips:** calculate the winner's 25% plus $2 payout.
+6. **Switch Bartenders:** choose to spend or save a switch token and see the consequence.
+7. **Build a Legal Deck:** add the final cards to reach exactly 30 and learn the three-copy limit.
+8. **Reach Last Call:** identify the $50 victory target.
 
-- Added distinct green Player 1 and red Player 2 selected-card states.
-- Added bartender portrait icons, clearer specialty text, and selected-state accessibility.
-- Improved enabled and disabled Lock In feedback, including remaining-card guidance.
-- Strengthened mobile touch targets, stacking, contrast, focus outlines, and reduced-motion support.
-- Added clearer gold winner treatment and larger tip payouts on round results.
-
-## v0.5.3a-prompt4.1 — itch.io packaging hotfix
-
-- Rebuilt the browser release with standards-compliant forward-slash ZIP paths so itch.io can resolve the CSS and JavaScript files.
-- Kept `index.html` at the ZIP root and verified every local asset reference against the exact archive.
-
-## v0.5.3b-prompt4.1 — card price layout hotfix
-
-- Replaced the absolutely positioned card price with a flexible footer below the card text.
-- Added spacing and a divider so names, traits, and prices cannot overlap on desktop or mobile.
-
-## v0.5.3c-prompt4.1 — duplicate-selection hotfix
-
-- Gave every physical copy of a drink card a unique instance identity.
-- Fixed duplicate drink copies appearing selected together while only counting as one selection.
-- Preserved the official token-based bartender switching rule.
-
-## v0.5.3d-prompt4.1 — conditional bartender prompt
-
-- The bartender selection phase now appears only when that player owns a switch token.
-- Local PvP skips the bartender pass-device screen when Player 2 has no token.
-- The Keep button now clearly explains that the token will be saved.
-
-## v0.5.4-prompt5 — AI difficulty system
-
-- Added Easy, Normal, and Hard difficulty selection before AI matches.
-- Moved AI behavior into a reusable, deterministic engine.
-- Added customer-aware Appeal evaluation and price-tiebreaker logic.
-- Added deck-aware bartender switching and Hard token conservation.
-- Kept human hands and locked selections outside every AI decision input.
-- Added automated AI behavior and privacy contract tests.
+Completion is stored locally in the browser. The closing screen offers an Easy AI practice match or a return to the main menu.
