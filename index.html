@@ -1,24 +1,4 @@
-const assert=require('assert');
-const fs=require('fs');
-const T=require('../js/tutorial.js');
-
-assert.equal(T.STEPS.length,8);
-assert.deepEqual(T.STEPS.map(step=>step.id),['customer','appeal','selection','service','tips','switch','deck','victory']);
-assert.equal(T.scoringExample().appeal,6);
-assert(T.exactThree(3));
-assert(!T.exactThree(2));
-assert(T.legalDeckCount(30));
-assert(!T.legalDeckCount(29));
-assert.equal(T.winnerTip(20),7);
-assert.equal(T.winTarget,50);
-assert.equal(T.maxCopies,3);
-
-const app=fs.readFileSync('js/app.js','utf8');
-const index=fs.readFileSync('index.html','utf8');
-assert(app.includes("localStorage.getItem('blc.tutorialSeen')"),'First visit must offer the tutorial.');
-assert(app.includes('Skip for Now'),'Tutorial must be skippable.');
-assert(app.includes('Play Tutorial'),'Tutorial must be replayable.');
-assert(app.includes("setTutorialFlag('blc.tutorialComplete','1')"),'Completion must be saved.');
-assert(app.includes("start('ai','easy')"),'Completion must offer an Easy AI practice game.');
-assert(index.indexOf('js/tutorial.js')<index.indexOf('js/app.js'),'Tutorial logic must load before the app.');
-console.log('All Prompt 7 tutorial tests passed.');
+const assert=require('assert'),R=require('../js/rules.js');
+const d={id:'x',spirit:'Whiskey',styles:['Premium','Strong'],price:20},c={love:'Whiskey',like:'Premium',dislike:'Sweet'},b={specialty:'Whiskey'};
+assert.equal(R.appeal(d,c,b),6);assert.equal(R.payout(20,true),7);assert.equal(R.payout(20,false),2);assert.equal(R.earned(14,31),2);
+const drinks=Array.from({length:10},(_,i)=>({id:String(i)})),deck=drinks.flatMap(x=>[x.id,x.id,x.id]);assert(R.validateDeck(deck,drinks).ok);assert(!R.validateDeck(deck.slice(1),drinks).ok);assert(!R.validateDeck(['0','0','0','0',...deck.slice(4)],drinks).ok);console.log('All rules tests passed.');

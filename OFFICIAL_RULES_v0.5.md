@@ -1,66 +1,17 @@
-# Changelog
+# Prompt 5 AI design
 
-## v0.5.3 — GitHub baseline
+The AI engine is isolated in `js/ai.js` and receives only information the AI is legally allowed to know.
 
-- Reconstructed a playable source repository from the documented v0.5.2a state.
-- Added official rules as a reusable testable module.
-- Included AI and local hotseat modes, bartender switching, scoring, payouts, deck validation, deck persistence, and a starter deck.
-- Applied Prompt 4.1 contrast, selected states, responsive layout, clearer Lock In feedback, and visible keyboard focus.
-- Added repository documentation and zero-dependency rules tests.
+## Difficulty levels
 
-## v0.5.3-prompt4.1 — Selection UI corrective pass
+- **Easy:** chooses three legal cards with relaxed, randomized play and rarely changes bartenders.
+- **Normal:** evaluates public customer preferences, Appeal, and price tiebreakers. It changes bartender when its remaining deck clearly supports another specialty.
+- **Hard:** makes exact drink choices and applies a token-conservation threshold based on current tokens, remaining deck support, tips, and distance to the next $15/$30/$45 switch award.
 
-- Added distinct green Player 1 and red Player 2 selected-card states.
-- Added bartender portrait icons, clearer specialty text, and selected-state accessibility.
-- Improved enabled and disabled Lock In feedback, including remaining-card guidance.
-- Strengthened mobile touch targets, stacking, contrast, focus outlines, and reduced-motion support.
-- Added clearer gold winner treatment and larger tip payouts on round results.
+## Hidden information
 
-## v0.5.3a-prompt4.1 — itch.io packaging hotfix
+Drink decisions receive only the AI hand, public customer, current bartender, selected difficulty, and randomness source. Bartender decisions happen before the customer and hands are revealed and receive only the AI bartender, AI deck composition, AI token count, AI tips, and the available bartender list. The human hand and selections are never inputs.
 
-- Rebuilt the browser release with standards-compliant forward-slash ZIP paths so itch.io can resolve the CSS and JavaScript files.
-- Kept `index.html` at the ZIP root and verified every local asset reference against the exact archive.
+## Determinism
 
-## v0.5.3b-prompt4.1 — card price layout hotfix
-
-- Replaced the absolutely positioned card price with a flexible footer below the card text.
-- Added spacing and a divider so names, traits, and prices cannot overlap on desktop or mobile.
-
-## v0.5.3c-prompt4.1 — duplicate-selection hotfix
-
-- Gave every physical copy of a drink card a unique instance identity.
-- Fixed duplicate drink copies appearing selected together while only counting as one selection.
-- Preserved the official token-based bartender switching rule.
-
-## v0.5.3d-prompt4.1 — conditional bartender prompt
-
-- The bartender selection phase now appears only when that player owns a switch token.
-- Local PvP skips the bartender pass-device screen when Player 2 has no token.
-- The Keep button now clearly explains that the token will be saved.
-
-## v0.5.4-prompt5 — AI difficulty system
-
-- Added Easy, Normal, and Hard difficulty selection before AI matches.
-- Moved AI behavior into a reusable, deterministic engine.
-- Added customer-aware Appeal evaluation and price-tiebreaker logic.
-- Added deck-aware bartender switching and Hard token conservation.
-- Kept human hands and locked selections outside every AI decision input.
-- Added automated AI behavior and privacy contract tests.
-
-## v0.5.5-prompt6 — private local PvP
-
-- Fixed the post-lock handoff that incorrectly reopened Player 2 bartender selection.
-- Added privacy screens before Player 1 and Player 2 hands are rendered.
-- Added a pass-back step after Player 2 bartender setup.
-- Added a neutral both-locked screen with an explicit shared Reveal Drinks action.
-- Ensured the confirmation screen exposes neither hand nor selected drink.
-- Added local PvP flow and privacy contract tests.
-
-## v0.5.6-prompt7 — interactive tutorial
-
-- Added an optional first-visit tutorial welcome with Skip for Now.
-- Added eight short interactive lessons covering every locked tutorial topic.
-- Added progress tracking, immediate answer feedback, and gated lesson advancement.
-- Saved tutorial completion locally and added replay controls to the menu and rules screen.
-- Added an Easy AI practice option after completion.
-- Added deterministic tutorial logic and UI contract tests.
+Both AI decisions accept an optional random-number function. Tests inject fixed values, making behavior reproducible without changing browser play.

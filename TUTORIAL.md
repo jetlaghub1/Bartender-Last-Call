@@ -1,29 +1,14 @@
-# Locked Development Roadmap
+# Prompt 6 local PvP privacy flow
 
-1. Audit current build — complete in prior project history.
-2. Separate maintainable source — complete in prior project history.
-3. Implement v0.5 rules and tests — complete.
-4. Add and validate the saved 30-card deck builder — complete.
-4.1 Improve contrast, selection feedback, mobile layout, button states, and accessibility without changing gameplay — included in this reconstruction.
-5. Add Easy, Normal, and Hard AI — complete in v0.5.4.
-6. Complete private local hotseat PvP flow — complete in v0.5.5.
-7. Add an interactive tutorial — complete in v0.5.6.
-8. Audit all drink, customer, and bartender data.
-9. Remove artificial duplicate content and strengthen card roles.
-10. Create a deterministic shared simulation engine.
-11. Run a 100,000-game baseline balance study.
-12. Apply the smallest evidence-based balance patch.
-13. Iterate until balance targets are met.
-14. Redesign the commercial-style interface.
-15. Approve a consistent art specification.
-16. Generate production art in batches of eight.
-17. Add sound and animation.
-18. Run full functional QA.
-19. Fix all critical and major bugs.
-20. Run regression testing against official rules.
-21. Create the production itch.io HTML ZIP.
-22. Create the development archive.
-23. Prepare final itch.io page copy.
-24. Perform the final exact-ZIP release audit.
+Local PvP uses one shared device. Privacy is enforced by replacing the visible interface at every handoff.
 
-Numbering is locked. Decimal prompts may be added without renumbering the main roadmap. No prompt is complete until its build and acceptance checks are verified.
+1. Player 1 privately handles any available bartender switch.
+2. If Player 2 has a switch token, a blank pass-device screen appears before their bartender choice.
+3. After setup, a blank pass-device screen returns the device to Player 1 before either hand appears.
+4. Player 1 selects and locks three drinks. Their hand is removed from the page.
+5. A blank pass-device screen appears before Player 2's hand is rendered.
+6. Player 2 selects and locks three drinks.
+7. A neutral confirmation screen displays no hand or drink choice. Both players place the device where they can see it and press **Reveal Drinks** together.
+8. Only then are the drinks resolved and displayed.
+
+This protects choices during ordinary pass-the-device play. Like any local browser game, it is not intended to defend against someone opening developer tools or modifying the client.
