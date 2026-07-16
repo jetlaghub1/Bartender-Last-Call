@@ -145,6 +145,7 @@ h3{font-size:1.08rem}
 
 .customer{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:1rem;align-items:center;margin-bottom:1rem;padding:1rem 1.15rem;border:1px solid #6e5934;border-radius:16px;background:linear-gradient(120deg,rgba(47,35,38,.98),rgba(25,32,45,.98));box-shadow:0 10px 28px rgba(0,0,0,.2);text-align:left;animation:fade-in .2s ease-out}
 .customer-avatar{display:grid;place-items:center;width:72px;height:72px;border:2px solid var(--brass);border-radius:50%;color:var(--brass-light);background:radial-gradient(circle at 35% 30%,#754654,#2b2330 55%,#111824 100%);font:800 1.45rem/1 var(--serif);box-shadow:0 0 0 5px rgba(233,184,90,.08)}
+.customer-avatar.has-art{overflow:hidden;padding:0}.customer-avatar.has-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 32%}
 .customer h2,.customer h3{margin:0 0 .38rem;font-size:clamp(1.35rem,3vw,1.8rem)}
 .customer-kicker{margin:0 0 .2rem;color:var(--muted);font-size:.64rem;font-weight:850;letter-spacing:.18em;text-transform:uppercase}
 .prefs{display:flex;justify-content:flex-start;gap:.5rem;flex-wrap:wrap}
@@ -215,7 +216,8 @@ h3{font-size:1.08rem}
 .bartender-card{background-image:url("../assets/art/frames/frame_bartender-core.png"),linear-gradient(160deg,#29384e,#151f30 62%,#111924);background-size:100% 100%,auto;background-repeat:no-repeat}
 .bartender-card.current{border-color:var(--brass)}
 .portrait{display:grid;place-items:center;width:3.15rem;height:3.15rem;margin-bottom:.65rem;border:1px solid #718099;border-radius:12px;color:var(--brass-light);background:linear-gradient(145deg,#2f3d50,#101824);font-size:1.45rem}
-.bartender-card .portrait.has-art{width:100%;height:106px;overflow:hidden}.portrait.has-art img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+.bartender-card .portrait{width:100%;height:auto;aspect-ratio:3/4;margin-bottom:.8rem;overflow:hidden;border-radius:10px;font-size:3rem}
+.portrait.has-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
 .bartender-card .specialty{margin:0 0 .45rem;color:var(--brass-light);font-size:.7rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
 .bartender-card .passive{margin:0;color:#b9c3d2;font-size:.75rem}
 
@@ -271,7 +273,7 @@ h3{font-size:1.08rem}
   .selection-header{align-items:flex-start}.selection-header h2{font-size:1.35rem}.selection-meter{min-width:104px;padding:.5rem}.selection-meter strong{font-size:1.1rem}.selection-meter span{font-size:.55rem}.bartender-line{font-size:.73rem}
   .hand-grid,.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem}.card{min-height:235px;padding:.62rem;border-radius:11px}.card h3{font-size:.9rem}.card-art{height:56px}.traits{font-size:.68rem}.trait-tags span{font-size:.55rem}.appeal-preview{padding:.4rem}.appeal-breakdown span{font-size:.52rem}.price{font-size:1.28rem}
   .decision-bar{gap:.5rem;padding:.55rem}.decision-copy{font-size:.65rem}.decision-copy strong{font-size:.75rem}.lock{min-width:145px;padding:.62rem .7rem;font-size:.82rem}
-  .bartender-grid{grid-template-columns:1fr}.bartender-card{min-height:165px}.switch-summary h2{font-size:1.5rem}
+  .bartender-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bartender-card{min-height:165px}.switch-summary h2{font-size:1.5rem}
   .result{margin:.5rem 0}.result-grid{grid-template-columns:1fr;padding:0 .7rem .7rem}.result-hero{padding:1rem}.result-actions{padding:0 .7rem .9rem}.result-row{padding:.8rem}
   .builder-head{display:block}.builder-count{display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.7rem}.builder-count strong{font-size:1.25rem}.builder-row{font-size:.8rem;padding:.45rem}.builder-row button{min-width:44px;min-height:44px}.builder-actions button{flex:1 1 120px}
   .privacy-screen{margin:6vh .25rem}.tutorial-panel{margin:0}.tutorial-top{align-items:center}.tutorial-top h2{font-size:1.2rem}.tutorial-card-grid,.tutorial-deck-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tutorial-card{min-height:155px}.tutorial-service-grid,.answer-grid{grid-template-columns:1fr}

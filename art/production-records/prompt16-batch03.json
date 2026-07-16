@@ -1,0 +1,28 @@
+{
+  "batch": "prompt16-batch03",
+  "projectVersion": "0.7.2",
+  "orders": [17, 18, 19, 20, 21, 22, 23, 24],
+  "generationDate": "2026-07-15",
+  "tool": "OpenAI built-in image generation",
+  "reviewState": "approved",
+  "designGoal": "Complete the bartender roster and make the first five customers memorable at gameplay thumbnail size without revealing scoring answers.",
+  "sharedPrompt": "Premium painterly stylized realism; elegant modern art-deco neighborhood cocktail bar; warm 3200K key from upper left, cool cyan-blue rim from camera right, soft burgundy fill, detailed navy shadows; central 80 percent safe zone; fictional adults 21 or older; no celebrity likeness; no text, brands, logos, watermarks, signatures, frames, or UI.",
+  "assets": [
+    {"file": "bartenders/bartender_nico_gin.webp", "source": "art/masters/prompt16-batch03/bartender_nico_gin_source.png", "promptSummary": "Lean androgynous Mediterranean Gin specialist with short wavy hair, precise botanical garnish work, green pocket detail, mixing glass and tweezers.", "review": ["distinct botanical silhouette", "face, hands, garnish, and glass inside safe zone", "correct shared lighting", "no brands or text"]},
+    {"file": "bartenders/bartender_sol_tequila.webp", "source": "art/masters/prompt16-batch03/bartender_sol_tequila_source.png", "promptSummary": "Athletic Mexican Tequila specialist with long braid, desert-gold detailing, bar spoon, agave garnish, and bold grounded stance.", "review": ["distinct agave silhouette", "face, hands, spoon, and garnish inside safe zone", "correct shared lighting", "no brands or text"]},
+    {"file": "bartenders/bartender_rae_wine.webp", "source": "art/masters/prompt16-batch03/bartender_rae_wine_source.png", "promptSummary": "Mature Black Wine specialist with silver-streaked locs, burgundy velvet waistcoat, tasting glass, and attentive evaluating posture.", "review": ["distinct mature wine silhouette", "face, hands, and glass inside safe zone", "correct shared lighting", "no brands or text"]},
+    {"file": "customers/customer_c01_college-regular.webp", "source": "art/masters/prompt16-batch03/customer_c01_college-regular_source.png", "promptSummary": "Young adult Korean-American regular in an unmarked green sweatshirt with messenger strap and closed textbook.", "review": ["recognizable student identity without readable text", "face, hand, strap, and book inside safe zone", "readable at circular thumbnail size", "respectful fictional adult"]},
+    {"file": "customers/customer_c02_night-shift-nurse.webp", "source": "art/masters/prompt16-batch03/customer_c02_night-shift-nurse_source.png", "promptSummary": "Black night-shift nurse in clean teal scrubs and midnight jacket with blank badge, watch, and folded scarf.", "review": ["recognizable professional identity without branding", "face, hands, watch, and blank badge inside safe zone", "readable at circular thumbnail size", "respectful fictional adult"]},
+    {"file": "customers/customer_c03_whiskey-collector.webp", "source": "art/masters/prompt16-batch03/customer_c03_whiskey-collector_source.png", "promptSummary": "Mature Japanese-American collector in charcoal tweed with unmarked leather tasting notebook and oak sample box.", "review": ["distinct discerning collector silhouette", "face, hands, notebook, and box inside safe zone", "readable at circular thumbnail size", "no labels or text"]},
+    {"file": "customers/customer_c04_garden-club-host.webp", "source": "art/masters/prompt16-batch03/customer_c04_garden-club-host_source.png", "promptSummary": "Elegant Lebanese-American garden host with silver curls, botanical scarf, fresh posy, plain vase, and folded gloves.", "review": ["distinct botanical host silhouette", "face, hands, posy, vase, and gloves inside safe zone", "readable at circular thumbnail size", "respectful fictional adult"]},
+    {"file": "customers/customer_c05_beach-traveler.webp", "source": "art/masters/prompt16-batch03/customer_c05_beach-traveler_source.png", "promptSummary": "Filipino traveler in sand linen and coral with unbranded camera, woven strap, and shell-shaped charm.", "review": ["distinct relaxed traveler silhouette", "face, hands, camera, and charm inside safe zone", "readable at circular thumbnail size", "no travel stereotype or branding"]}
+  ],
+  "runtimeNotes": {
+    "bartenderSource": [1086, 1448],
+    "bartenderRuntime": [768, 1024],
+    "customerSource": [1254, 1254],
+    "customerRuntime": [768, 768],
+    "reason": "Each generated source was reduced directly to its matching runtime aspect ratio with no crop and no upscaling.",
+    "gameplayChanged": false
+  }
+}

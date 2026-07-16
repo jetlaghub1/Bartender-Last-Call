@@ -1,10 +1,10 @@
 {
-  "manifestVersion": "1.2.0",
-  "projectVersion": "0.7.1-prompt16-batch02",
+  "manifestVersion": "1.3.0",
+  "projectVersion": "0.7.2-prompt16-batch03",
   "runtimeRoot": "assets/art",
   "artBible": "docs/ART_BIBLE_v1.md",
   "batchSize": 8,
-  "production": {"completedThroughOrder": 16, "completedAssets": 16, "nextOrder": 17, "lastBatch": "prompt16-batch02"},
+  "production": {"completedThroughOrder": 24, "completedAssets": 24, "nextOrder": 25, "lastBatch": "prompt16-batch03"},
   "counts": {
     "system": 12,
     "bartenders": 7,
@@ -39,16 +39,16 @@
     {"order": 14, "id": "bartender-mara", "name": "Mara", "specialty": "Vodka", "file": "bartenders/bartender_mara_vodka.webp", "master": [1086, 1448], "runtime": [768, 1024], "status": "approved", "batch": "prompt16-batch02"},
     {"order": 15, "id": "bartender-theo", "name": "Theo", "specialty": "Whiskey", "file": "bartenders/bartender_theo_whiskey.webp", "master": [1086, 1448], "runtime": [768, 1024], "status": "approved", "batch": "prompt16-batch02"},
     {"order": 16, "id": "bartender-june", "name": "June", "specialty": "Rum", "file": "bartenders/bartender_june_rum.webp", "master": [1086, 1448], "runtime": [768, 1024], "status": "approved", "batch": "prompt16-batch02"},
-    {"order": 17, "id": "bartender-nico", "name": "Nico", "specialty": "Gin", "file": "bartenders/bartender_nico_gin.webp"},
-    {"order": 18, "id": "bartender-sol", "name": "Sol", "specialty": "Tequila", "file": "bartenders/bartender_sol_tequila.webp"},
-    {"order": 19, "id": "bartender-rae", "name": "Rae", "specialty": "Wine", "file": "bartenders/bartender_rae_wine.webp"}
+    {"order": 17, "id": "bartender-nico", "name": "Nico", "specialty": "Gin", "file": "bartenders/bartender_nico_gin.webp", "master": [1086, 1448], "runtime": [768, 1024], "status": "approved", "batch": "prompt16-batch03"},
+    {"order": 18, "id": "bartender-sol", "name": "Sol", "specialty": "Tequila", "file": "bartenders/bartender_sol_tequila.webp", "master": [1086, 1448], "runtime": [768, 1024], "status": "approved", "batch": "prompt16-batch03"},
+    {"order": 19, "id": "bartender-rae", "name": "Rae", "specialty": "Wine", "file": "bartenders/bartender_rae_wine.webp", "master": [1086, 1448], "runtime": [768, 1024], "status": "approved", "batch": "prompt16-batch03"}
   ],
   "customers": [
-    {"order": 20, "id": "c01", "name": "College Regular", "file": "customers/customer_c01_college-regular.webp"},
-    {"order": 21, "id": "c02", "name": "Night Shift Nurse", "file": "customers/customer_c02_night-shift-nurse.webp"},
-    {"order": 22, "id": "c03", "name": "Whiskey Collector", "file": "customers/customer_c03_whiskey-collector.webp"},
-    {"order": 23, "id": "c04", "name": "Garden Club Host", "file": "customers/customer_c04_garden-club-host.webp"},
-    {"order": 24, "id": "c05", "name": "Beach Traveler", "file": "customers/customer_c05_beach-traveler.webp"},
+    {"order": 20, "id": "c01", "name": "College Regular", "file": "customers/customer_c01_college-regular.webp", "master": [1254, 1254], "runtime": [768, 768], "status": "approved", "batch": "prompt16-batch03"},
+    {"order": 21, "id": "c02", "name": "Night Shift Nurse", "file": "customers/customer_c02_night-shift-nurse.webp", "master": [1254, 1254], "runtime": [768, 768], "status": "approved", "batch": "prompt16-batch03"},
+    {"order": 22, "id": "c03", "name": "Whiskey Collector", "file": "customers/customer_c03_whiskey-collector.webp", "master": [1254, 1254], "runtime": [768, 768], "status": "approved", "batch": "prompt16-batch03"},
+    {"order": 23, "id": "c04", "name": "Garden Club Host", "file": "customers/customer_c04_garden-club-host.webp", "master": [1254, 1254], "runtime": [768, 768], "status": "approved", "batch": "prompt16-batch03"},
+    {"order": 24, "id": "c05", "name": "Beach Traveler", "file": "customers/customer_c05_beach-traveler.webp", "master": [1254, 1254], "runtime": [768, 768], "status": "approved", "batch": "prompt16-batch03"},
     {"order": 25, "id": "c06", "name": "Agave Hunter", "file": "customers/customer_c06_agave-hunter.webp"},
     {"order": 26, "id": "c07", "name": "Wine Critic", "file": "customers/customer_c07_wine-critic.webp"},
     {"order": 27, "id": "c08", "name": "Dessert Date", "file": "customers/customer_c08_dessert-date.webp"},
