@@ -3,6 +3,7 @@ const fs=require('fs');
 const path=require('path');
 const css=fs.readFileSync(path.join(__dirname,'../css/styles.css'),'utf8');
 const app=fs.readFileSync(path.join(__dirname,'../js/app.js'),'utf8');
+const storage=fs.readFileSync(path.join(__dirname,'../js/storage.js'),'utf8');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 
 assert(css.includes('.player-two .card.selected'),'Player 2 needs a distinct selected-card style.');
@@ -24,6 +25,10 @@ assert(app.includes('Customer preferences')&&app.includes('pref-value'),'Custome
 assert(app.includes('switch-token')&&app.includes('Earn more at $15, $30, and $45'),'Switch availability and thresholds must be obvious.');
 assert(css.includes('.decision-bar{position:sticky'),'The Lock In decision area must remain available during long hands.');
 assert(css.includes('@media(max-width:560px)')&&css.includes('@media(max-width:370px)'),'Phone and narrow-phone layouts must be explicit.');
-assert(html.includes('v0.6.0 · Prompt 14'),'The browser build must identify the Prompt 14 release.');
-assert(!app.includes('<img'),'Prompt 14 must not repeat a promotional collage as card art.');
+assert(html.includes('v0.7.1 · Art Batch 02'),'The browser build must identify the current production-art batch.');
+assert(html.indexOf('js/storage.js')<html.indexOf('js/app.js'),'Deck storage must load before the game app.');
+assert(app.includes('role="status"')&&storage.includes('Deck saved'),'Deck saving must provide visible status feedback.');
+assert(app.includes("home(result.message,result.persistent?'success':'warning')"),'The home screen must distinguish permanent and session-only saves.');
+assert(app.includes('Not saved — ${v.message}'),'Invalid decks must explain why Save did not proceed.');
+assert(!app.includes('<img class="card-art"'),'Drink cards must not repeat a promotional collage as card art.');
 console.log('All Prompt 14 interface contract tests passed.');
