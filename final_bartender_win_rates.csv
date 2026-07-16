@@ -1,12 +1,8 @@
-# Prompt 12 Report Files
-
-This directory contains the first evidence-based balance patch and its paired same-seed comparison against Prompt 11.
-
-- `BALANCE_PATCH_REPORT.md` — readable changes, evidence, and before/after findings
-- `before_report.json` and `after_report.json` — complete machine-readable aggregates
-- `before_after_summary.csv` — system-level comparison
-- `bartender_before_after.csv` — starting bartender comparison and target status
-- `drink_price_changes.csv` — the six authorized price changes with reasons
-- `after_*.csv` — complete post-patch bartender, drink, customer, matchup, game-length, summary, and switch results
-
-The patch changes drink prices only. Prompt 13 should treat Rae's remaining 53.25% starting win rate as the sole current bartender target failure.
+bartender,specialty,prompt12_games,prompt12_win_rate,prompt13_games,prompt13_win_rate,change_percentage_points,inside_48_to_52
+Nico,Gin,28566,0.500945179584121,28566,0.5093817825386824,0.843660295456139,true
+Sol,Tequila,28566,0.5014702793530771,28566,0.5025904921935168,0.11202128404397271,true
+Rae,Wine,28564,0.5324534378938524,28564,0.5020655370396303,-3.038790085422205,true
+Theo,Whiskey,28578,0.4951361186927007,28578,0.5002099517111065,0.5073833018405804,true
+Ace,Beer,28580,0.49107767669699093,28580,0.4978306508047586,0.6752974107767651,true
+June,Rum,28566,0.4933837429111531,28566,0.4956241685920325,0.22404256808793988,true
+Mara,Vodka,28580,0.48554933519944016,28580,0.49230230930720786,0.6752974107767706,true

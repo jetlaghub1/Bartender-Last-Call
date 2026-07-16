@@ -1,17 +1,51 @@
-# Prompt 5 AI design
+# Content audit — v0.5.7
 
-The AI engine is isolated in `js/ai.js` and receives only information the AI is legally allowed to know.
+## Audited inventory
 
-## Difficulty levels
+- 42 drink cards
+- 28 customers
+- 7 bartenders
+- 7 allowed Spirits
+- 12 allowed Style traits
 
-- **Easy:** chooses three legal cards with relaxed, randomized play and rarely changes bartenders.
-- **Normal:** evaluates public customer preferences, Appeal, and price tiebreakers. It changes bartender when its remaining deck clearly supports another specialty.
-- **Hard:** makes exact drink choices and applies a token-conservation threshold based on current tokens, remaining deck support, tips, and distance to the next $15/$30/$45 switch award.
+These are the actual current totals. Earlier planning references to 120 drinks, 50 customers, and 16 bartenders do not describe this source project and are not claimed here.
 
-## Hidden information
+## Release-blocking results
 
-Drink decisions receive only the AI hand, public customer, current bartender, selected difficulty, and randomness source. Bartender decisions happen before the customer and hands are revealed and receive only the AI bartender, AI deck composition, AI token count, AI tips, and the available bartender list. The human hand and selections are never inputs.
+**PASS — 0 errors.**
 
-## Determinism
+- Every drink has one allowed Spirit, two unique allowed Styles, and one positive price.
+- No drink combines the contradictory Premium and Cheap traits.
+- Drink IDs, names, and complete mechanical profiles are unique.
+- Every customer has exactly one allowed Love, one Like, and one Dislike.
+- No customer repeats the same trait across Love, Like, and Dislike.
+- Every bartender has one allowed specialty and the standardized `<Specialty> drinks gain +1 Appeal.` passive.
+- Bartender names are unique.
 
-Both AI decisions accept an optional random-number function. Tests inject fixed values, making behavior reproducible without changing browser play.
+## Distribution
+
+Each Spirit appears on exactly 6 drinks: Beer, Vodka, Whiskey, Rum, Gin, Tequila, and Wine.
+
+Style appearances range from 6 to 8:
+
+- Fruity: 8
+- Premium, Cheap, Strong, Sweet, Bitter, Fresh, Sour, Creamy, Clean, and Savory: 7 each
+- Spicy: 6
+
+Prices range from $8 to $22 in $2 steps:
+
+- $8 and $10: 6 drinks each
+- $12, $14, $16, $18, $20, and $22: 5 drinks each
+
+All seven bartenders cover one Spirit specialty each. Customer Love/Like/Dislike records collectively cover every allowed trait.
+
+## Prompt 9 warnings
+
+These are valid data but weak content design:
+
+1. 21 drink names are numbered variants.
+2. All 28 customer names end in numbers and reuse seven base archetype labels.
+3. Every drink has exactly two Styles; no one-Style drinks exist.
+4. Bartenders cover all Spirit specialties but none of the 12 Style specialties.
+
+Prompt 9 should decide which variants deserve distinct identities, which should be removed, and whether the content set needs style-specialist bartenders or one-Style drinks. Those design changes were deliberately not mixed into this schema audit.

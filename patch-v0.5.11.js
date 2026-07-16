@@ -1,56 +1,34 @@
-'use strict';
-
 const assert=require('assert');
 const fs=require('fs');
 const path=require('path');
-const SIM=require('../simulation/simulator.js');
-const R=require('../js/rules.js');
+const css=fs.readFileSync(path.join(__dirname,'../css/styles.css'),'utf8');
+const app=fs.readFileSync(path.join(__dirname,'../js/app.js'),'utf8');
+const storage=fs.readFileSync(path.join(__dirname,'../js/storage.js'),'utf8');
+const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 
-const sequence=seed=>{const rng=SIM.createRng(seed);return Array.from({length:8},()=>rng())};
-assert.deepEqual(sequence('same-seed'),sequence('same-seed'),'Equal seeds must produce equal random sequences.');
-assert.notDeepEqual(sequence('same-seed'),sequence('different-seed'),'Different seeds should produce different sequences.');
-
-for(const deck of [SIM.starterDeck(),SIM.randomLegalDeck(SIM.createRng('random-deck')),SIM.heuristicDeck(SIM.DATA.bartenders[0],SIM.createRng('heuristic-deck'))]){
-  assert.equal(deck.length,R.DECK);
-  assert(R.validateDeck(deck,SIM.DATA.drinks).ok);
-}
-
-const options={seed:'deterministic-game',deckType:['starter','heuristic'],difficulty:['normal','hard'],bartenders:['Ace','Mara']};
-const first=SIM.simulateGame(options),second=SIM.simulateGame(options);
-assert.deepEqual(first,second,'A complete game must replay exactly from the same seed and configuration.');
-assert(first.rounds>0&&first.rounds<200);
-assert.equal(first.customerEvents.length,first.rounds);
-assert.equal(first.scoreHistory.length,first.rounds+1);
-assert.equal(first.cardEvents.length,first.rounds*R.CHOOSE*2);
-assert.equal(first.cardDrawEvents.length,first.rounds*R.HAND*2);
-assert.equal(first.tokensEarned.length,2);
-assert.equal(first.tokensRemaining.length,2);
-assert.equal(first.switchOpportunities.length,2);
-assert([0,1].includes(first.winner));
-
-const batch=SIM.simulateBatch({games:12,seed:'batch-test',deckType:'random',difficulty:'hard'});
-assert.equal(batch.summary.games,12);
-assert.equal(batch.summary.player1Wins+batch.summary.player2Wins,12);
-assert(batch.summary.averageRounds>0);
-assert(batch.summary.averageTipsPerRound>0);
-assert(batch.summary.switchDecisionRate>=0&&batch.summary.switchDecisionRate<=1);
-assert(batch.summary.tokenSpendRate>=0&&batch.summary.tokenSpendRate<=1);
-assert(Object.keys(batch.summary.cardStats).length>0);
-assert(Object.keys(batch.summary.customerStats).length>0);
-
-const matchups=SIM.simulateAllBartenderMatchups({gamesPerMatchup:1,seed:'matchup-test'});
-const expected=SIM.DATA.bartenders.length*SIM.DATA.bartenders.length;
-assert.equal(matchups.matchups.length,expected);
-assert.equal(matchups.summary.games,expected);
-assert.equal(matchups.config.deckType,'heuristic');
-
-const appSource=fs.readFileSync(path.join(__dirname,'../js/app.js'),'utf8');
-const simulatorSource=fs.readFileSync(path.join(__dirname,'../simulation/simulator.js'),'utf8');
-for(const sharedCall of ['compareServed','roundGains','matchWinner']){
-  assert(appSource.includes(`R.${sharedCall}`),`Browser game must use shared ${sharedCall}.`);
-  assert(simulatorSource.includes(`RULES.${sharedCall}`),`Simulator must use shared ${sharedCall}.`);
-}
-assert(appSource.includes('p.deck=shuffle(instantiate(p.deckIds))'),'Browser refills must preserve each player\'s own deck, matching the simulator.');
-assert.strictEqual(SIM.RULES,R,'Simulator and tests must import the same rules module.');
-
-console.log('All deterministic simulation tests passed.');
+assert(css.includes('.player-two .card.selected'),'Player 2 needs a distinct selected-card style.');
+assert(css.includes(':focus-visible'),'Keyboard focus must remain visible.');
+assert(css.includes('prefers-reduced-motion'),'Reduced-motion preferences must be respected.');
+assert(/min-height:(?:44|45|46)px/.test(css),'Controls need mobile-sized touch targets.');
+assert(app.includes("'player-one':'player-two'"),'Player identity classes must be assigned during selection.');
+assert(app.includes('Choose ${3-p.selected.length} More'),'Lock In must explain its disabled state.');
+assert(app.includes('result-row ${i===winner'), 'Round results must highlight the winner.');
+assert(css.includes('.price{position:static'), 'Card prices must remain in normal flow below variable-length text.');
+assert(css.includes('.card-footer'), 'Card prices need a dedicated footer separated from traits and Appeal details.');
+assert(app.includes('function instantiate(ids)'), 'Each physical drink copy must receive a unique identity.');
+assert(app.includes('data-instance="${d.instanceId}"'), 'Rendered cards must expose their unique instance identity.');
+assert(app.includes('if(p.tokens<=0){finishSwitch();return}'), 'Bartender selection must skip players without a switch token.');
+assert(app.includes("state.mode==='pvp'&&state.players[1].tokens>0"), 'PvP pass screen must require a Player 2 switch token.');
+assert(app.includes('class="match-hud"')&&app.includes('role="progressbar"'),'The match needs a clear score, round, and progress HUD.');
+assert(app.includes('function appealDetails(')&&app.includes('appeal-breakdown'),'Every drink must expose its exact Appeal calculation.');
+assert(app.includes('Customer preferences')&&app.includes('pref-value'),'Customer Love, Like, and Dislike values must stay visible.');
+assert(app.includes('switch-token')&&app.includes('Earn more at $15, $30, and $45'),'Switch availability and thresholds must be obvious.');
+assert(css.includes('.decision-bar{position:sticky'),'The Lock In decision area must remain available during long hands.');
+assert(css.includes('@media(max-width:560px)')&&css.includes('@media(max-width:370px)'),'Phone and narrow-phone layouts must be explicit.');
+assert(html.includes('v0.6.1a · Deck Save Hotfix'),'The browser build must identify the current hotfix.');
+assert(html.indexOf('js/storage.js')<html.indexOf('js/app.js'),'Deck storage must load before the game app.');
+assert(app.includes('role="status"')&&storage.includes('Deck saved'),'Deck saving must provide visible status feedback.');
+assert(app.includes("home(result.message,result.persistent?'success':'warning')"),'The home screen must distinguish permanent and session-only saves.');
+assert(app.includes('Not saved — ${v.message}'),'Invalid decks must explain why Save did not proceed.');
+assert(!app.includes('<img'),'Prompt 14 must not repeat a promotional collage as card art.');
+console.log('All Prompt 14 interface contract tests passed.');

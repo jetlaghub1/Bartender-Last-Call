@@ -1,26 +1,36 @@
-'use strict';
-
 const assert=require('assert');
-const BASELINE=require('../simulation/baseline.js');
-const REPORTING=require('../simulation/reporting.js');
+const DATA=require('../js/data.js');
+const RULES=require('../js/rules.js');
+const CONTENT=require('../js/content.js');
 
-for(let index=0;index<49;index++)assert.deepEqual(BASELINE.matchupFor(index),[Math.floor(index/7),index%7]);
-assert.deepEqual(BASELINE.matchupFor(49),[0,0]);
+const report=CONTENT.audit(DATA);
+assert(report.ok,report.errors.join('\n'));
+assert.equal(DATA.drinks.length,42);
+assert.equal(DATA.customers.length,28);
+assert.equal(DATA.bartenders.length,7);
 
-const first=BASELINE.runBaseline({games:98,randomGames:49,seed:'baseline-test'});
-const second=BASELINE.runBaseline({games:98,randomGames:49,seed:'baseline-test'});
-assert.deepEqual(first,second,'Baseline reports must replay exactly from the same seed.');
-assert.equal(first.summary.games,98);
-assert.equal(first.strata.random.games,49);
-assert.equal(first.strata.heuristic.games,49);
-assert.equal(first.matchups.length,98);
-assert(first.matchups.every(row=>row.summary.games===1));
+assert.deepEqual(DATA.drinks.map(card=>card.id),Array.from({length:42},(_,i)=>`d${i+1}`),'Saved-deck IDs must remain stable.');
+assert(DATA.drinks.every(card=>!/\s\d+$/.test(card.name)),'Drink names must not be numbered variants.');
+assert(DATA.customers.every(customer=>!/\s\d+$/.test(customer.name)),'Customer names must not be numbered variants.');
 
-const artifacts=REPORTING.buildArtifacts(first);
-for(const name of ['baseline_report.json','BASELINE_BALANCE_REPORT.md','summary.csv','bartender_win_rates.csv','drink_performance.csv','customer_outcomes.csv','bartender_matchups.csv','game_length_distribution.csv','switch_usage.csv'])assert(artifacts[name]&&artifacts[name].length>20,`Missing report artifact: ${name}`);
-assert(artifacts['BASELINE_BALANCE_REPORT.md'].includes('No card, bartender, customer, payout, or rules values were changed.'));
-assert.equal(artifacts['bartender_win_rates.csv'].trim().split('\n').length,1+7*3);
-assert.equal(artifacts['drink_performance.csv'].trim().split('\n').length,1+42*3);
-assert.equal(artifacts['customer_outcomes.csv'].trim().split('\n').length,1+28*3);
+const spiritCounts=CONTENT.countBy(DATA.drinks,'spirit');
+assert(DATA.spirits.every(spirit=>spiritCounts[spirit]===6),'Each Spirit needs six drinks.');
+const focused=DATA.drinks.filter(card=>card.styles.length===1);
+assert.equal(focused.length,7,'The set needs seven focused one-Style cards.');
+const focusedSpirits=CONTENT.countBy(focused,'spirit');
+assert(DATA.spirits.every(spirit=>focusedSpirits[spirit]===1),'Each Spirit needs one focused card.');
 
-console.log('All Prompt 11 baseline tests passed.');
+const styleCounts=Object.values(report.summary.drinkStyleCounts);
+assert(Math.min(...styleCounts)>=4,'Every Style needs at least four drinks.');
+assert(Math.max(...styleCounts)<=8,'No Style should dominate more than eight drinks.');
+
+const customerProfiles=DATA.customers.map(c=>`${c.love}|${c.like}|${c.dislike}`);
+assert.equal(new Set(customerProfiles).size,DATA.customers.length,'Every customer needs a unique preference profile.');
+
+assert.equal(DATA.starterIds.length,10);
+assert.equal(new Set(DATA.starterIds).size,10);
+const starterCards=DATA.starterIds.map(id=>DATA.drinks.find(card=>card.id===id));
+assert(starterCards.every(Boolean),'Every starter ID must exist.');
+assert.equal(new Set(starterCards.map(card=>card.spirit)).size,7,'Starter pool must cover every Spirit.');
+assert(RULES.validateDeck(DATA.starterIds.flatMap(id=>[id,id,id]),DATA.drinks).ok,'Starter deck must be legal.');
+console.log('All Prompt 9 content-quality tests passed.');

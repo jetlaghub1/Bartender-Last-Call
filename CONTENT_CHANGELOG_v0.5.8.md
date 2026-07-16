@@ -1,14 +1,8 @@
-# Content Changelog v0.5.11
+# Content data changelog — v0.5.7
 
-Prompt 12 changes drink prices only:
-
-- Spiced Saison: $14 → $20
-- Market Mule: $14 → $20
-- Smoked Manhattan: $22 → $20
-- Pepper Negroni: $18 → $16
-- Platinum Añejo: $22 → $21
-- Velvet Merlot: $16 → $12
-
-No drink traits, names, IDs, customers, bartender specialties, passive abilities, rules, payout formula, thresholds, deck constraints, or victory values changed.
-
-The same-seed 100,000-game comparison is stored under `reports/prompt12/`.
+- Converted `data.js` into a browser/Node-compatible source module.
+- Added schema version `0.5.7`.
+- Added automatic validation during data loading; invalid content now stops the build instead of silently entering gameplay.
+- Added validation for allowed vocabularies, trait counts, contradictory traits, prices, duplicate IDs/names/profiles, customer preference uniqueness, bartender specialties, and standardized passives.
+- Confirmed that the existing 42 drinks, 28 customers, and 7 bartenders required no record-level corrections.
+- Recorded four non-blocking variety warnings for Prompt 9 rather than disguising generated variants as finished unique content.

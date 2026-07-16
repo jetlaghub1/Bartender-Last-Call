@@ -1,93 +1,54 @@
-# Validation report
+(function(root,factory){
+  const rules=typeof module==='object'&&module.exports?require('./rules.js'):root.BLC_RULES;
+  const api=factory(rules);
+  if(typeof module==='object'&&module.exports)module.exports=api;
+  root.BLC_AI=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(R){
+  const DIFFICULTIES={
+    easy:{name:'Easy',description:'Relaxed play with occasional mistakes.'},
+    normal:{name:'Normal',description:'Reads customers and uses price tiebreakers.'},
+    hard:{name:'Hard',description:'Optimizes every legal choice and plans switch tokens.'}
+  };
 
-Validation date: 2026-07-15
+  function normalizedDifficulty(value){return DIFFICULTIES[value]?value:'normal'}
+  function randomIndex(length,rng){return Math.max(0,Math.min(length-1,Math.floor(rng()*length)))}
+  function shuffled(items,rng){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=randomIndex(i+1,rng);[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
+  function drinkValue(drink,customer,bartender){return R.appeal(drink,customer,bartender)*100+drink.price}
 
-- JavaScript syntax: PASS (`data.js`, `rules.js`, `app.js`, and test file)
-- Appeal calculation (Love +3, Like +2, specialty +1): PASS
-- Winner and loser payout examples: PASS
-- Multiple switch thresholds crossed at once: PASS
-- 29-card deck rejection: PASS
-- Four-copy deck rejection: PASS
-- Browser asset references: PASS by repository inspection
-- Prompt 4.1 UI contract checks: PASS (distinct player colors, focus visibility, reduced motion, touch-target sizing, Lock In guidance, and winner highlighting)
-- Prompt 5 syntax checks: PASS (`ai.js`, updated `app.js`, and AI tests)
-- Difficulty availability: PASS (Easy, Normal, and Hard)
-- Normal and Hard customer-aware drink choice: PASS
-- Bartender switch legality and zero-token handling: PASS
-- Hard future-token conservation behavior: PASS
-- Hidden-player-state isolation contract: PASS
-- Prompt 6 Player 1 setup handoff: PASS
-- Prompt 6 Player 1-to-Player 2 private drink handoff: PASS
-- Prompt 6 bartender phase does not repeat after drink lock: PASS
-- Prompt 6 both-locked confirmation and explicit reveal: PASS
-- Prompt 6 confirmation exposes no hand or selected drink: PASS
-- Prompt 7 eight-lesson curriculum: PASS
-- Prompt 7 Appeal and payout examples match shared rules: PASS
-- Prompt 7 exactly-three and 30-card gates: PASS
-- Prompt 7 first-visit, skip, completion, replay, and Easy practice contracts: PASS
-- Prompt 7 deck lesson selectable-card interaction: PASS
-- Prompt 7 live copy counts, three-copy blocking, full-deck blocking, and reset controls: PASS
-- Prompt 7 customer and bartender context on selection/service lessons: PASS
-- Prompt 7 service lesson uses the player's actual selected cards: PASS
-- Prompt 7 displayed practice Appeal values come from shared rules and are uniquely ranked: PASS
-- Prompt 7 switch lesson exposes three replacement bartenders with unique specialties: PASS
-- Prompt 7 switch lesson requires save or replacement selection before continuing: PASS
-- Prompt 7 token cost, new specialty, and cancel-to-save behavior: PASS
-- Prompt 8 complete content schema audit: PASS (0 errors)
-- Prompt 8 drink ID/name/mechanical-profile uniqueness: PASS
-- Prompt 8 drink Spirit/Style/price/contradiction rules: PASS
-- Prompt 8 customer Love/Like/Dislike uniqueness: PASS
-- Prompt 8 bartender specialty and standardized +1 passive: PASS
-- Prompt 8 invalid-fixture rejection tests: PASS
-- Prompt 9 numbered drink/customer variants removed: PASS
-- Prompt 9 42 unique profiles and stable `d1`–`d42` IDs: PASS
-- Prompt 9 six drinks and one focused card per Spirit: PASS
-- Prompt 9 Style distribution range 4–8: PASS
-- Prompt 9 unique customer preference profiles: PASS
-- Prompt 9 curated starter deck legality and all-Spirit coverage: PASS
-- Prompt 10 seeded random sequence repeatability: PASS
-- Prompt 10 complete-game deterministic replay: PASS
-- Prompt 10 random, starter, and heuristic deck legality: PASS
-- Prompt 10 browser and simulator shared round-resolution path: PASS
-- Prompt 10 each player's own deck preserved across refill cycles: PASS
-- Prompt 10 batch metrics for game length, first player, ties, tips, switches, cards, customers, and comebacks: PASS
-- Prompt 10 all 49 ordered bartender matchups: PASS
-- Prompt 11 exact total of 100,000 games: PASS
-- Prompt 11 random and heuristic strata of 50,000 games each: PASS
-- Prompt 11 all ordered matchups represented by 1,020 or 1,021 games per deck stratum: PASS
-- Prompt 11 player wins sum to 100,000: PASS (49,930 Player 1; 50,070 Player 2)
-- Prompt 11 customer events sum to 1,119,197 simulated rounds: PASS
-- Prompt 11 draw, selection, and service event totals match shared hand/choice rules: PASS
-- Prompt 11 switch-token conservation: PASS
-- Prompt 11 JSON, readable Markdown, and seven focused CSV reports: PASS
-- Prompt 11 balance data unchanged: PASS
-- Prompt 12 exact six-card price manifest matches browser data: PASS
-- Prompt 12 rules, traits, customers, bartenders, payouts, thresholds, decks, and victory values unchanged: PASS
-- Prompt 12 exact total of 100,000 post-patch games: PASS
-- Prompt 12 paired seed, Hard AI, 50/50 deck split, and ordered matchup schedule: PASS
-- Prompt 12 starting-bartender spread improved from 12.48 to 4.69 percentage points: PASS
-- Prompt 12 bartender target compliance improved from 1/7 to 6/7: PASS
-- Prompt 12 first-player win rate 50.33% and average game length 11.17 rounds: PASS
-- Prompt 12 raw JSON, readable Markdown, and ten comparison/post-patch CSV reports: PASS
-- Prompt 13 exact one-card price manifest matches browser data: PASS
-- Prompt 13 exact total of 100,000 final games with 50/50 deck split: PASS
-- Prompt 13 every ordered matchup represented by 1,020 or 1,021 games per deck stratum: PASS
-- Prompt 13 all 7 bartender rates between 48% and 52%: PASS (49.23%–50.94%)
-- Prompt 13 bartender spread reduced to 1.71 percentage points: PASS
-- Prompt 13 first-player advantage 0.20 percentage points: PASS
-- Prompt 13 88.81% of games in 8–12 rounds with 11.22 average: PASS
-- Prompt 13 zero never-selected and three underused cards: PASS
-- Prompt 13 maximum customer bartender concentration 25.48%: PASS
-- Prompt 13 round, winner, matchup, card-event, customer-event, and token totals reconcile: PASS
-- Prompt 13 raw JSON, target status, readable Markdown, and final CSV reports: PASS
-- Prompt 14 match HUD, customer dossier, exact Appeal details, switch-token summary, sticky decision bar, and result comparison contracts: PASS
-- Prompt 14 desktop layout at 1280×720 with no horizontal overflow: PASS
-- Prompt 14 phone layout at 390×844 with no horizontal overflow: PASS
-- Prompt 14 phone card-price layout with seven rendered cards and no text overlap: PASS
-- Prompt 14 three-card selection count and Lock In enablement: PASS
-- Prompt 14 complete Easy-AI round through results: PASS
-- Prompt 14 deck builder renders all 42 drinks with 44px phone controls: PASS
-- Prompt 14 browser console errors and warnings: PASS (none)
-- Prompt 14 uses CSS-native individual card motifs rather than repeated promotional artwork: PASS
+  function chooseDrinks(hand,customer,bartender,difficulty='normal',rng=Math.random){
+    const level=normalizedDifficulty(difficulty);
+    if(!Array.isArray(hand)||hand.length<R.CHOOSE)throw new Error('AI requires at least three cards.');
+    if(level==='easy')return shuffled(hand,rng).slice(0,R.CHOOSE);
+    const ranked=[...hand].sort((a,b)=>drinkValue(b,customer,bartender)-drinkValue(a,customer,bartender));
+    if(level==='normal'&&hand.length>R.CHOOSE&&rng()<0.18){
+      const mistake=R.CHOOSE-1;
+      [ranked[mistake],ranked[R.CHOOSE]]=[ranked[R.CHOOSE],ranked[mistake]];
+    }
+    return ranked.slice(0,R.CHOOSE);
+  }
 
-The browser checks ran against a local HTTP server. The public build remains dependency-free and can also launch by opening `index.html` directly after extraction.
+  function specialtySupport(deck,specialty){
+    if(!Array.isArray(deck)||!deck.length)return 0;
+    return deck.reduce((sum,drink)=>sum+([drink.spirit].concat(drink.styles||[]).includes(specialty)?1+drink.price/100:0),0);
+  }
+  function distanceToNextToken(tips){const next=R.THRESHOLDS.find(value=>value>tips);return next===undefined?Infinity:next-tips}
+
+  function chooseBartender({current,bartenders,deck,tokens,tips,difficulty='normal',rng=Math.random}){
+    const level=normalizedDifficulty(difficulty);
+    if(!current||!Array.isArray(bartenders)||!bartenders.length||tokens<=0)return current;
+    if(level==='easy'){
+      if(rng()>=0.14)return current;
+      const alternatives=bartenders.filter(b=>b!==current);
+      return alternatives[randomIndex(alternatives.length,rng)]||current;
+    }
+    const ranked=bartenders.map(b=>({bartender:b,support:specialtySupport(deck,b.specialty)})).sort((a,b)=>b.support-a.support);
+    const best=ranked[0],currentSupport=specialtySupport(deck,current.specialty),gain=best.support-currentSupport;
+    if(!best||best.bartender===current)return current;
+    if(level==='normal')return gain>=1.5?best.bartender:current;
+    const nearToken=distanceToNextToken(tips)<=5;
+    const requiredGain=tokens>1?0.7:(nearToken?1.2:2.2);
+    return gain>=requiredGain?best.bartender:current;
+  }
+
+  return{DIFFICULTIES,chooseDrinks,chooseBartender,drinkValue,specialtySupport,distanceToNextToken};
+});

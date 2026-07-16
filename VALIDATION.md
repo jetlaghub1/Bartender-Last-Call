@@ -1,65 +1,37 @@
-# Deterministic Simulation Engine
+# Prompt 14 Interface Design
 
-Prompt 10 adds a standalone Node.js simulator in `simulation/` without creating a second version of the game rules. Both the browser game and simulator import `js/rules.js`, `js/ai.js`, and `js/data.js`.
+Version: v0.6.0  
+Scope: presentation and usability only
 
-Prompt 11 adds a memory-safe study runner, report generation, and the checked-in 100,000-game baseline under `reports/prompt11/`.
+## Visual direction
 
-## Reproducibility
+Bartender: Last Call now uses a late-night cocktail-bar identity: midnight blue surfaces, burgundy atmosphere, warm brass highlights, ivory typography, and restrained neon player accents. Serif display type supplies character while the system sans-serif keeps rules and values readable.
 
-Every simulated game has a string seed. The seed controls bartender assignment, deck construction, shuffle order, customers, AI mistakes, equal-price ties, and bartender decisions. Repeating a configuration with the same seed returns an identical game record.
+All temporary character and drink motifs are built from text and CSS. No single promotional collage or shared bitmap is repeated across cards. Prompt 15 now defines the approved production-art specification; Prompt 16 creates and reviews the final assets in batches of no more than eight.
 
-## Supported studies
+## Information hierarchy
 
-- AI versus AI at Easy, Normal, or Hard difficulty
-- A specified bartender pair or a seeded random pair
-- Starter, random legal, or heuristic legal decks
-- All 49 ordered matchups across the seven bartenders, including mirror matches
-- Batch studies with one aggregate report
-- Custom legal 30-card decks through the simulator API
+1. The match HUD keeps tips, progress to $50, bartender, switch tokens, and round number visible.
+2. The customer dossier states Love +3, Like +2, and Dislike −2 before any card decision.
+3. Each drink card shows its identity, traits, exact Appeal total, contributing modifiers, and price in separate regions.
+4. The decision bar reports the exact selected count and explains the Lock In state.
+5. Results compare both served drinks and emphasize the winner and both payouts.
 
-Random decks sample from three available copies of every drink and are validated by the shared deck rule. Heuristic decks select the ten drinks with the strongest average Appeal and price tiebreak value for their bartender, then use three copies of each.
+## Responsive behavior
 
-## Shared rule path
+- Seven columns on wide desktop, four below 1050px, three below 780px, two below 560px, and one below 370px.
+- The score HUD condenses into a round strip plus two compact player panels on phones.
+- Customer preferences stack into full-width rows on phones.
+- Deck controls remain at least 44×44px and the action area remains sticky.
+- Layouts were checked at 1280×720 and 390×844 with no horizontal overflow.
 
-The simulator calls the same functions as the browser game for:
+## Accessibility
 
-- Appeal and best served drink
-- Appeal and price comparison, including seeded random final ties
-- Winner and loser payouts
-- Switch-token thresholds
-- Match victory at $50
-- Deck legality
+- Near-white primary text and muted blue-gray secondary text on dark surfaces.
+- Visible keyboard focus outlines and clear enabled, disabled, selected, and winner states.
+- Semantic buttons, progress bars, ARIA labels for card summaries, and live selected-card/deck counts.
+- Reduced-motion preferences disable non-essential transitions and animation.
 
-Automated tests fail if the browser game or simulator stops using the shared round comparison, payout, or match-victory functions.
+## Gameplay preservation
 
-## Metrics
-
-Game records include rounds, winner, final tips, score history, initial and final bartenders, switches, deck lists, selected and served cards, customer results, Appeal ties, price ties, comeback status, and maximum winning-player deficit.
-
-Aggregate reports include:
-
-- First-player win rate
-- Average, median, and 90th-percentile game length
-- Appeal-tie and price-tie rates per round
-- Comeback rate, defined as winning after trailing by at least $10
-- Average switches per game
-- Average combined tips earned per round
-- Bartender games and wins
-- Card selection, service, and round-win counts
-- Customer outcomes and winning bartenders
-
-These are raw measurements, not balance conclusions. Prompt 11 runs the formal 100,000-game baseline and turns these measurements into a human-readable study.
-
-## Commands
-
-```text
-node simulation/run.js --games 1000 --seed first-study --deck random --difficulty hard
-node simulation/run.js --matchups --games-per-matchup 100 --seed matchup-study
-node simulation/run-baseline.js --games 100000 --random-games 50000
-```
-
-Available deck values are `starter`, `random`, and `heuristic`. Available difficulty values are `easy`, `normal`, and `hard`. The runner writes JSON to standard output, so it can be redirected to a report file when desired.
-
-## Scope and limitations
-
-The engine simulates the current deterministic AI heuristics, not human psychology or an optimal game-theory player. It is suitable for reproducible regression tests and broad balance signals. Real playtest feedback remains necessary before commercial balance decisions.
+Prompt 14 does not change rules, prices, content, AI decisions, payout formulas, deck legality, switch-token thresholds, or the $50 victory target. It presents the converged v0.5.12 system more clearly.

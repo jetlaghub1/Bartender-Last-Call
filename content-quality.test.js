@@ -1,109 +1,148 @@
 'use strict';
 
-const SIM=require('./simulator.js');
+const RULES=require('../js/rules.js');
+const AI=require('../js/ai.js');
+const DATA=require('../js/data.js');
 
-const ratio=(value,total)=>total?value/total:0;
-const percent=value=>(value*100).toFixed(2);
-const decimal=(value,digits=3)=>Number(value||0).toFixed(digits);
-const csvValue=value=>{const text=value===undefined||value===null?'':String(value);return /[",\r\n]/.test(text)?`"${text.replace(/"/g,'""')}"`:text};
-const csv=rows=>rows.map(row=>row.map(csvValue).join(',')).join('\n')+'\n';
-
-function scopes(report){return[['overall',report.summary],['random',report.strata.random],['heuristic',report.strata.heuristic]]}
-function inTargetRounds(summary){let count=0;for(let round=8;round<=12;round++)count+=summary.roundDistribution[round]||0;return ratio(count,summary.games)}
-function bartenderRows(report){
-  const rows=[];
-  for(const [scope,summary] of scopes(report))for(const bartender of SIM.DATA.bartenders){
-    const initial=summary.bartenderStats[bartender.name]||{games:0,wins:0},final=summary.finalBartenderStats[bartender.name]||{games:0,wins:0};
-    rows.push({scope,name:bartender.name,specialty:bartender.specialty,initialGames:initial.games,initialWins:initial.wins,initialWinRate:ratio(initial.wins,initial.games),finalGames:final.games,finalWins:final.wins,finalWinRate:ratio(final.wins,final.games)});
-  }
-  return rows;
+function hashSeed(seed){
+  const text=String(seed);let hash=2166136261;
+  for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619)}
+  return hash>>>0;
 }
-function cardRows(report){
-  const rows=[];
-  for(const [scope,summary] of scopes(report)){
-    const playerDecks=summary.games*2,selectionSlots=summary.totalRounds*SIM.RULES.CHOOSE*2,serviceSlots=summary.totalRounds*2,averageShare=1/SIM.DATA.drinks.length;
-    for(const card of SIM.DATA.drinks){
-      const stat=summary.cardStats[card.id]||{deckCopies:0,deckGames:0,drawn:0,selected:0,selectionRoundWins:0,served:0,servedRoundWins:0};
-      const selectionShare=ratio(stat.selected,selectionSlots),deckInclusionRate=ratio(stat.deckGames,playerDecks);
-      const flags=[];if(stat.selected===0)flags.push('dead');else if(selectionShare<averageShare*.5)flags.push('underused');if(selectionShare>averageShare*2)flags.push('dominant-selection');if(deckInclusionRate>.7)flags.push('high-inclusion');
-      rows.push({scope,id:card.id,name:card.name,spirit:card.spirit,styles:card.styles.join('|'),price:card.price,deckCopies:stat.deckCopies,deckGames:stat.deckGames,deckInclusionRate,averageCopiesWhenIncluded:ratio(stat.deckCopies,stat.deckGames),drawn:stat.drawn,selected:stat.selected,pickRateWhenDrawn:ratio(stat.selected,stat.drawn),selectionShare,selectedSideWinRate:ratio(stat.selectionRoundWins,stat.selected),served:stat.served,serviceShare:ratio(stat.served,serviceSlots),servedWinRate:ratio(stat.servedRoundWins,stat.served),flags:flags.join('|')});
+function createRng(seed='bartender-last-call'){
+  let value=hashSeed(seed);
+  return function(){value+=0x6D2B79F5;let t=value;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296};
+}
+function shuffle(items,rng){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
+function resolveBartender(value,rng){
+  if(value&&typeof value==='object')return value;
+  if(typeof value==='number')return DATA.bartenders[value]||DATA.bartenders[0];
+  if(typeof value==='string')return DATA.bartenders.find(b=>b.name===value||b.specialty===value)||DATA.bartenders[0];
+  return DATA.bartenders[Math.floor(rng()*DATA.bartenders.length)];
+}
+function starterDeck(){return DATA.starterIds.flatMap(id=>[id,id,id])}
+function randomLegalDeck(rng){return shuffle(DATA.drinks.flatMap(card=>[card.id,card.id,card.id]),rng).slice(0,RULES.DECK)}
+function expectedCardValue(card,bartender){
+  const appeal=DATA.customers.reduce((sum,customer)=>sum+RULES.appeal(card,customer,bartender),0)/DATA.customers.length;
+  return appeal*100+card.price;
+}
+function heuristicDeck(bartender,rng){
+  const ranked=DATA.drinks.map(card=>({card,score:expectedCardValue(card,bartender),tie:rng()})).sort((a,b)=>b.score-a.score||b.tie-a.tie);
+  return ranked.slice(0,10).flatMap(entry=>[entry.card.id,entry.card.id,entry.card.id]);
+}
+function buildDeck(type,bartender,rng){
+  if(Array.isArray(type)){const check=RULES.validateDeck(type,DATA.drinks);if(!check.ok)throw new Error(check.message);return[...type]}
+  if(type==='starter')return starterDeck();
+  if(type==='heuristic')return heuristicDeck(bartender,rng);
+  if(type==='random'||type===undefined)return randomLegalDeck(rng);
+  throw new Error(`Unknown deck type: ${type}`);
+}
+function instantiateDeck(ids,cycle){return ids.map((id,index)=>({...DATA.drinks.find(card=>card.id===id),instanceId:`${cycle}-${index}-${id}`}))}
+function makePlayer(index,bartender,deckIds,rng){
+  return{index,initialBartender:bartender,bartender,tips:0,tokens:1,deckIds:[...deckIds],cycle:0,drawPile:shuffle(instantiateDeck(deckIds,0),rng),switches:0};
+}
+function drawHand(player,rng){
+  if(player.drawPile.length<RULES.HAND){player.cycle++;player.drawPile=shuffle(instantiateDeck(player.deckIds,player.cycle),rng)}
+  return player.drawPile.splice(0,RULES.HAND);
+}
+function normalizePair(value,fallback){return Array.isArray(value)?[value[0]??fallback,value[1]??fallback]:[value??fallback,value??fallback]}
+
+function simulateGame(options={}){
+  const seed=options.seed??'game-0',rng=createRng(seed),difficulty=normalizePair(options.difficulty,'hard'),deckTypes=normalizePair(options.deckType,'random');
+  const bartenderValues=normalizePair(options.bartenders,null);
+  const initialBartenders=[resolveBartender(bartenderValues[0],rng),resolveBartender(bartenderValues[1],rng)];
+  const decks=[buildDeck(deckTypes[0],initialBartenders[0],rng),buildDeck(deckTypes[1],initialBartenders[1],rng)];
+  for(const deck of decks){const check=RULES.validateDeck(deck,DATA.drinks);if(!check.ok)throw new Error(check.message)}
+  const players=[makePlayer(0,initialBartenders[0],decks[0],rng),makePlayer(1,initialBartenders[1],decks[1],rng)];
+  const metrics={appealTies:0,priceTies:0,cardEvents:[],cardDrawEvents:[],customerEvents:[],scoreHistory:[[0,0]],roundTips:[0,0],switchOpportunities:[0,0],tokensEarned:[1,1]};
+  let round=0,winner=null,lastRoundWinner=null;
+  const maxRounds=options.maxRounds??200;
+  while(winner===null&&round<maxRounds){
+    round++;
+    for(const player of players){
+      if(player.tokens<=0)continue;
+      metrics.switchOpportunities[player.index]++;
+      const choice=AI.chooseBartender({current:player.bartender,bartenders:DATA.bartenders,deck:player.drawPile,tokens:player.tokens,tips:player.tips,difficulty:difficulty[player.index],rng});
+      if(choice!==player.bartender){player.bartender=choice;player.tokens--;player.switches++}
     }
+    const customer=DATA.customers[Math.floor(rng()*DATA.customers.length)];
+    const hands=players.map(player=>drawHand(player,rng));
+    const selected=players.map((player,index)=>AI.chooseDrinks(hands[index],customer,player.bartender,difficulty[index],rng));
+    hands.forEach((hand,index)=>{for(const card of hand)metrics.cardDrawEvents.push({cardId:card.id,player:index,round})});
+    const served=players.map((player,index)=>RULES.best(selected[index],customer,player.bartender,rng));
+    const comparison=RULES.compareServed(served[0],served[1],rng);lastRoundWinner=comparison.winner;
+    if(comparison.appealTie)metrics.appealTies++;if(comparison.priceTie)metrics.priceTies++;
+    const gains=RULES.roundGains(served,lastRoundWinner);
+    players.forEach((player,index)=>{
+      const before=player.tips;player.tips+=gains[index];const earned=RULES.earned(before,player.tips);player.tokens+=earned;metrics.tokensEarned[index]+=earned;metrics.roundTips[index]+=gains[index];
+      for(const card of selected[index])metrics.cardEvents.push({cardId:card.id,player:index,round,selected:true,served:card.instanceId===served[index].drink.instanceId,roundWon:index===lastRoundWinner});
+    });
+    metrics.customerEvents.push({customer:customer.name,winner:lastRoundWinner,winnerBartender:players[lastRoundWinner].bartender.name,appealTie:comparison.appealTie,priceTie:comparison.priceTie});
+    metrics.scoreHistory.push([players[0].tips,players[1].tips]);
+    winner=RULES.matchWinner([players[0].tips,players[1].tips],lastRoundWinner);
   }
-  return rows;
-}
-function customerRows(report){
-  const rows=[];
-  for(const [scope,summary] of scopes(report))for(const customer of SIM.DATA.customers){
-    const stat=summary.customerStats[customer.name]||{rounds:0,player1Wins:0,player2Wins:0,appealTies:0,priceTies:0,winnerBartenders:{}};
-    const winners=Object.entries(stat.winnerBartenders).sort((a,b)=>b[1]-a[1]),top=winners[0]||['',0];
-    rows.push({scope,name:customer.name,love:customer.love,like:customer.like,dislike:customer.dislike,rounds:stat.rounds,player1WinRate:ratio(stat.player1Wins,stat.rounds),appealTieRate:ratio(stat.appealTies,stat.rounds),priceTieRate:ratio(stat.priceTies,stat.rounds),topWinningBartender:top[0],topBartenderWinShare:ratio(top[1],stat.rounds),biasAboveEqualShare:ratio(top[1],stat.rounds)-1/SIM.DATA.bartenders.length,winnerBartenders:SIM.DATA.bartenders.map(b=>`${b.name}:${stat.winnerBartenders[b.name]||0}`).join('|')});
-  }
-  return rows;
-}
-function summaryRows(report){return scopes(report).map(([scope,s])=>({scope,games:s.games,firstPlayerWinRate:s.firstPlayerWinRate,firstPlayerAdvantagePoints:Math.abs(s.firstPlayerWinRate-.5)*100,averageRounds:s.averageRounds,medianRounds:s.medianRounds,p90Rounds:s.p90Rounds,gamesIn8To12Rounds:inTargetRounds(s),appealTieRate:s.appealTieRate,priceTieRate:s.priceTieRate,comebackRate:s.comebackRate,averageTipsPerRound:s.averageTipsPerRound,averageSwitchesPerGame:s.averageSwitchesPerGame,switchDecisionRate:s.switchDecisionRate,tokenSpendRate:s.tokenSpendRate,averageUnspentTokensPerGame:s.averageUnspentTokensPerGame}))}
-
-function buildMarkdown(report){
-  const summaries=summaryRows(report),overall=summaries[0],bartenders=bartenderRows(report).filter(row=>row.scope==='overall').sort((a,b)=>b.initialWinRate-a.initialWinRate),cards=cardRows(report).filter(row=>row.scope==='overall'),customers=customerRows(report).filter(row=>row.scope==='overall');
-  const topCards=[...cards].sort((a,b)=>b.selectionShare-a.selectionShare).slice(0,10),bottomCards=[...cards].sort((a,b)=>a.selectionShare-b.selectionShare).slice(0,10),biased=[...customers].sort((a,b)=>b.biasAboveEqualShare-a.biasAboveEqualShare).slice(0,10);
-  const bartenderSpread=(bartenders[0].initialWinRate-bartenders[bartenders.length-1].initialWinRate)*100,dead=cards.filter(card=>card.flags.includes('dead')).length,underused=cards.filter(card=>card.flags.includes('underused')).length,dominant=cards.filter(card=>card.flags.includes('dominant-selection')).length,highInclusion=cards.filter(card=>card.flags.includes('high-inclusion')).length;
-  const lines=[
-    '# Bartender: Last Call — Prompt 11 Baseline Balance Report','',
-    '**Status: baseline only. No card, bartender, customer, payout, or rules values were changed.**','',
-    '## Study design','',
-    `- ${report.config.games.toLocaleString('en-US')} seeded Hard-AI games`,
-    `- ${report.config.randomGames.toLocaleString('en-US')} random-legal-deck games and ${report.config.heuristicGames.toLocaleString('en-US')} heuristic-deck games`,
-    `- All ${report.config.orderedMatchups} ordered bartender matchups scheduled almost equally within both deck groups`,
-    `- Seed: \`${report.config.seed}\``,
-    '- Exact v0.5 browser rules, AI, and content modules shared with the simulator','',
-    '## Executive findings','',
-    `- First-player win rate: **${percent(overall.firstPlayerWinRate)}%** (${decimal(overall.firstPlayerAdvantagePoints,2)} percentage points from even).`,
-    `- Game length: **${decimal(overall.averageRounds,2)} rounds average**, median ${overall.medianRounds}, 90th percentile ${overall.p90Rounds}; ${percent(overall.gamesIn8To12Rounds)}% finished in the 8–12 round target.`,
-    `- Starting-bartender spread: **${decimal(bartenderSpread,2)} percentage points** from highest to lowest.`,
-    `- Card flags: ${dead} never selected, ${underused} underused, ${dominant} dominant by selection share, and ${highInclusion} above 70% overall deck inclusion.`,
-    `- Switches: ${decimal(overall.averageSwitchesPerGame,2)} per game; ${percent(overall.switchDecisionRate)}% of token-holding round decisions resulted in a switch; ${percent(overall.tokenSpendRate)}% of earned tokens were spent.`,
-    `- Average combined tips earned per round: **$${decimal(overall.averageTipsPerRound,2)}**.`,
-    `- Appeal ties occurred in ${percent(overall.appealTieRate)}% of rounds; exact price ties occurred in ${percent(overall.priceTieRate)}%.`,
-    `- Comebacks from at least $10 behind occurred in ${percent(overall.comebackRate)}% of games.`,'',
-    '## Overall and deck-stratum comparison','',
-    '| Scope | Games | P1 win | Avg rounds | 8–12 rounds | Appeal ties | Comebacks | Switches/game | Tips/round |','|---|---:|---:|---:|---:|---:|---:|---:|---:|',
-    ...summaries.map(s=>`| ${s.scope} | ${s.games.toLocaleString('en-US')} | ${percent(s.firstPlayerWinRate)}% | ${decimal(s.averageRounds,2)} | ${percent(s.gamesIn8To12Rounds)}% | ${percent(s.appealTieRate)}% | ${percent(s.comebackRate)}% | ${decimal(s.averageSwitchesPerGame,2)} | $${decimal(s.averageTipsPerRound,2)} |`),'',
-    '## Starting bartender results','',
-    '| Bartender | Specialty | Games | Wins | Win rate |','|---|---|---:|---:|---:|',
-    ...bartenders.map(row=>`| ${row.name} | ${row.specialty} | ${row.initialGames.toLocaleString('en-US')} | ${row.initialWins.toLocaleString('en-US')} | ${percent(row.initialWinRate)}% |`),'',
-    'Because the AI can switch, “starting bartender” is the controlled matchup measurement. Final-bartender results are included in the CSV for context but are influenced by switching selection.','',
-    '## Highest selection shares','',
-    '| Drink | Spirit | Selection share | Picked when drawn | Served win rate | Deck inclusion | Flags |','|---|---|---:|---:|---:|---:|---|',
-    ...topCards.map(row=>`| ${row.name} | ${row.spirit} | ${percent(row.selectionShare)}% | ${percent(row.pickRateWhenDrawn)}% | ${percent(row.servedWinRate)}% | ${percent(row.deckInclusionRate)}% | ${row.flags||'—'} |`),'',
-    '## Lowest selection shares','',
-    '| Drink | Spirit | Selection share | Picked when drawn | Served win rate | Deck inclusion | Flags |','|---|---|---:|---:|---:|---:|---|',
-    ...bottomCards.map(row=>`| ${row.name} | ${row.spirit} | ${percent(row.selectionShare)}% | ${percent(row.pickRateWhenDrawn)}% | ${percent(row.servedWinRate)}% | ${percent(row.deckInclusionRate)}% | ${row.flags||'—'} |`),'',
-    '“Selected-side win rate” and “served win rate” are correlations, not proof that a card caused the win. Prompt 12 should use these alongside deck inclusion, draw rate, and matchup context.','',
-    '## Customers with the strongest bartender concentration','',
-    '| Customer | Love / Like / Dislike | Rounds | Top winning bartender | Share | Above equal share | P1 win |','|---|---|---:|---|---:|---:|---:|',
-    ...biased.map(row=>`| ${row.name} | ${row.love} / ${row.like} / ${row.dislike} | ${row.rounds.toLocaleString('en-US')} | ${row.topWinningBartender} | ${percent(row.topBartenderWinShare)}% | ${decimal(row.biasAboveEqualShare*100,2)} pp | ${percent(row.player1WinRate)}% |`),'',
-    '## Interpretation limits','',
-    '- Hard AI is deterministic and customer-aware, but it is not a perfect player or a substitute for human playtesting.',
-    '- Random-deck results measure broad content exposure; heuristic-deck results measure the current deck evaluator, not a solved competitive metagame.',
-    '- Statistical association does not prove causation. Prompt 12 should make the smallest changes and rerun the same seeds for comparison.','',
-    '## Next step','',
-    'Prompt 12 may use this report to propose the smallest evidence-based balance patch. No such patch is included here.',''
-  ];
-  return lines.join('\n');
-}
-
-function buildArtifacts(report){
-  const summaries=summaryRows(report),bartenders=bartenderRows(report),cards=cardRows(report),customers=customerRows(report);
+  if(winner===null)throw new Error(`Simulation exceeded ${maxRounds} rounds.`);
+  const comeback=metrics.scoreHistory.some(score=>winner===0?score[1]-score[0]>=10:score[0]-score[1]>=10);
+  const maxDeficit=Math.max(0,...metrics.scoreHistory.map(score=>winner===0?score[1]-score[0]:score[0]-score[1]));
   return{
-    'baseline_report.json':JSON.stringify(report,null,2)+'\n',
-    'BASELINE_BALANCE_REPORT.md':buildMarkdown(report),
-    'summary.csv':csv([['scope','games','first_player_win_rate','first_player_advantage_points','average_rounds','median_rounds','p90_rounds','games_in_8_to_12_rounds','appeal_tie_rate','price_tie_rate','comeback_rate','average_tips_per_round','average_switches_per_game','switch_decision_rate','token_spend_rate','average_unspent_tokens_per_game'],...summaries.map(r=>[r.scope,r.games,r.firstPlayerWinRate,r.firstPlayerAdvantagePoints,r.averageRounds,r.medianRounds,r.p90Rounds,r.gamesIn8To12Rounds,r.appealTieRate,r.priceTieRate,r.comebackRate,r.averageTipsPerRound,r.averageSwitchesPerGame,r.switchDecisionRate,r.tokenSpendRate,r.averageUnspentTokensPerGame])]),
-    'bartender_win_rates.csv':csv([['scope','bartender','specialty','starting_games','starting_wins','starting_win_rate','final_games','final_wins','final_win_rate'],...bartenders.map(r=>[r.scope,r.name,r.specialty,r.initialGames,r.initialWins,r.initialWinRate,r.finalGames,r.finalWins,r.finalWinRate])]),
-    'drink_performance.csv':csv([['scope','id','name','spirit','styles','price','deck_copies','deck_games','deck_inclusion_rate','average_copies_when_included','drawn','selected','pick_rate_when_drawn','selection_share','selected_side_win_rate','served','service_share','served_win_rate','flags'],...cards.map(r=>[r.scope,r.id,r.name,r.spirit,r.styles,r.price,r.deckCopies,r.deckGames,r.deckInclusionRate,r.averageCopiesWhenIncluded,r.drawn,r.selected,r.pickRateWhenDrawn,r.selectionShare,r.selectedSideWinRate,r.served,r.serviceShare,r.servedWinRate,r.flags])]),
-    'customer_outcomes.csv':csv([['scope','customer','love','like','dislike','rounds','player1_win_rate','appeal_tie_rate','price_tie_rate','top_winning_bartender','top_bartender_win_share','bias_above_equal_share','winner_bartender_counts'],...customers.map(r=>[r.scope,r.name,r.love,r.like,r.dislike,r.rounds,r.player1WinRate,r.appealTieRate,r.priceTieRate,r.topWinningBartender,r.topBartenderWinShare,r.biasAboveEqualShare,r.winnerBartenders])]),
-    'bartender_matchups.csv':csv([['deck_type','player1_bartender','player2_bartender','games','player1_wins','player2_wins','player1_win_rate','average_rounds','appeal_tie_rate','price_tie_rate','comeback_rate','average_switches_per_game'],...report.matchups.map(r=>[r.deckType,r.first,r.second,r.summary.games,r.summary.player1Wins,r.summary.player2Wins,r.summary.firstPlayerWinRate,r.summary.averageRounds,r.summary.appealTieRate,r.summary.priceTieRate,r.summary.comebackRate,r.summary.averageSwitchesPerGame])]),
-    'game_length_distribution.csv':csv([['scope','rounds','games','share'],...scopes(report).flatMap(([scope,s])=>Object.keys(s.roundDistribution).map(Number).sort((a,b)=>a-b).map(round=>[scope,round,s.roundDistribution[round],ratio(s.roundDistribution[round],s.games)]))]),
-    'switch_usage.csv':csv([['scope','games','switches','switch_opportunities','tokens_earned_including_starting_tokens','tokens_remaining','average_switches_per_game','switch_decision_rate','token_spend_rate','average_unspent_tokens_per_game'],...scopes(report).map(([scope,s])=>[scope,s.games,s.totalSwitches,s.totalSwitchOpportunities,s.totalTokensEarned,s.totalTokensRemaining,s.averageSwitchesPerGame,s.switchDecisionRate,s.tokenSpendRate,s.averageUnspentTokensPerGame])])
+    seed:String(seed),winner,rounds:round,firstPlayerWon:winner===0,comeback,maxDeficit,
+    initialBartenders:players.map(player=>player.initialBartender.name),finalBartenders:players.map(player=>player.bartender.name),
+    tips:players.map(player=>player.tips),switches:players.map(player=>player.switches),deckTypes,decks,
+    tokensEarned:metrics.tokensEarned,tokensRemaining:players.map(player=>player.tokens),switchOpportunities:metrics.switchOpportunities,
+    appealTies:metrics.appealTies,priceTies:metrics.priceTies,cardEvents:metrics.cardEvents,cardDrawEvents:metrics.cardDrawEvents,customerEvents:metrics.customerEvents,scoreHistory:metrics.scoreHistory
   };
 }
 
-module.exports={csv,summaryRows,bartenderRows,cardRows,customerRows,buildMarkdown,buildArtifacts};
+function addStat(map,key,defaults){if(!map[key])map[key]={...defaults};return map[key]}
+function createAggregateState(){
+  return{games:0,player1Wins:0,player2Wins:0,totalRounds:0,totalTips:0,appealTies:0,priceTies:0,comebacks:0,totalSwitches:0,totalSwitchOpportunities:0,totalTokensEarned:0,totalTokensRemaining:0,roundDistribution:{},bartenderStats:{},finalBartenderStats:{},cardStats:{},customerStats:{}};
+}
+function addGameToAggregate(summary,game){
+  summary.games++;game.winner===0?summary.player1Wins++:summary.player2Wins++;summary.totalRounds+=game.rounds;summary.totalTips+=game.tips[0]+game.tips[1];summary.appealTies+=game.appealTies;summary.priceTies+=game.priceTies;if(game.comeback)summary.comebacks++;summary.totalSwitches+=game.switches[0]+game.switches[1];summary.totalSwitchOpportunities+=(game.switchOpportunities||[0,0]).reduce((a,b)=>a+b,0);summary.totalTokensEarned+=(game.tokensEarned||[0,0]).reduce((a,b)=>a+b,0);summary.totalTokensRemaining+=(game.tokensRemaining||[0,0]).reduce((a,b)=>a+b,0);summary.roundDistribution[game.rounds]=(summary.roundDistribution[game.rounds]||0)+1;
+  game.initialBartenders.forEach((name,index)=>{const stat=addStat(summary.bartenderStats,name,{games:0,wins:0});stat.games++;if(index===game.winner)stat.wins++});
+  game.finalBartenders.forEach((name,index)=>{const stat=addStat(summary.finalBartenderStats,name,{games:0,wins:0});stat.games++;if(index===game.winner)stat.wins++});
+  game.decks.forEach(deck=>{const seen=new Set();for(const cardId of deck){const stat=addStat(summary.cardStats,cardId,{deckCopies:0,deckGames:0,drawn:0,selected:0,selectionRoundWins:0,served:0,servedRoundWins:0});stat.deckCopies++;seen.add(cardId)}for(const cardId of seen)addStat(summary.cardStats,cardId,{deckCopies:0,deckGames:0,drawn:0,selected:0,selectionRoundWins:0,served:0,servedRoundWins:0}).deckGames++});
+  for(const event of game.cardDrawEvents||[]){addStat(summary.cardStats,event.cardId,{deckCopies:0,deckGames:0,drawn:0,selected:0,selectionRoundWins:0,served:0,servedRoundWins:0}).drawn++}
+  for(const event of game.cardEvents){const stat=addStat(summary.cardStats,event.cardId,{deckCopies:0,deckGames:0,drawn:0,selected:0,selectionRoundWins:0,served:0,servedRoundWins:0});stat.selected++;if(event.roundWon)stat.selectionRoundWins++;if(event.served){stat.served++;if(event.roundWon)stat.servedRoundWins++}}
+  for(const event of game.customerEvents){const stat=addStat(summary.customerStats,event.customer,{rounds:0,player1Wins:0,player2Wins:0,appealTies:0,priceTies:0,winnerBartenders:{}});stat.rounds++;event.winner===0?stat.player1Wins++:stat.player2Wins++;if(event.appealTie)stat.appealTies++;if(event.priceTie)stat.priceTies++;stat.winnerBartenders[event.winnerBartender]=(stat.winnerBartenders[event.winnerBartender]||0)+1}
+  return summary;
+}
+function percentileFromDistribution(distribution,count,fraction){
+  if(!count)return 0;const target=Math.floor((count-1)*fraction),rounds=Object.keys(distribution).map(Number).sort((a,b)=>a-b);let seen=0;for(const round of rounds){seen+=distribution[round];if(seen>target)return round}return rounds[rounds.length-1]||0;
+}
+function finalizeAggregate(summary){
+  const rounds=summary.totalRounds||1,games=summary.games;
+  return{
+    ...summary,
+    firstPlayerWinRate:games?summary.player1Wins/games:0,
+    averageRounds:games?summary.totalRounds/games:0,
+    medianRounds:percentileFromDistribution(summary.roundDistribution,games,.5),p90Rounds:percentileFromDistribution(summary.roundDistribution,games,.9),
+    appealTieRate:summary.appealTies/rounds,priceTieRate:summary.priceTies/rounds,
+    comebackRate:games?summary.comebacks/games:0,
+    averageSwitchesPerGame:games?summary.totalSwitches/games:0,
+    averageTipsPerRound:summary.totalTips/rounds,
+    switchDecisionRate:summary.totalSwitchOpportunities?summary.totalSwitches/summary.totalSwitchOpportunities:0,
+    tokenSpendRate:summary.totalTokensEarned?summary.totalSwitches/summary.totalTokensEarned:0,
+    averageUnspentTokensPerGame:games?summary.totalTokensRemaining/games:0
+  };
+}
+function aggregateGames(games){const summary=createAggregateState();for(const game of games)addGameToAggregate(summary,game);return finalizeAggregate(summary)}
+function simulateBatch(options={}){
+  const count=options.games??1000,scheduleRng=createRng(`${options.seed??'batch'}:schedule`),games=[];
+  for(let i=0;i<count;i++){
+    const bartenders=options.bartenders??[Math.floor(scheduleRng()*DATA.bartenders.length),Math.floor(scheduleRng()*DATA.bartenders.length)];
+    games.push(simulateGame({...options,bartenders,seed:`${options.seed??'batch'}:${i}`}));
+  }
+  return{config:{games:count,seed:String(options.seed??'batch'),deckType:options.deckType??'random',difficulty:options.difficulty??'hard'},summary:aggregateGames(games)};
+}
+function simulateAllBartenderMatchups(options={}){
+  const gamesPerMatchup=options.gamesPerMatchup??100,deckType=options.deckType??'heuristic',difficulty=options.difficulty??'hard',allGames=[],matchups=[];
+  for(let first=0;first<DATA.bartenders.length;first++)for(let second=0;second<DATA.bartenders.length;second++){
+    const games=[];
+    for(let game=0;game<gamesPerMatchup;game++)games.push(simulateGame({...options,deckType,difficulty,bartenders:[first,second],seed:`${options.seed??'matchups'}:${first}:${second}:${game}`}));
+    allGames.push(...games);matchups.push({first:DATA.bartenders[first].name,second:DATA.bartenders[second].name,summary:aggregateGames(games)});
+  }
+  return{config:{gamesPerMatchup,matchups:matchups.length,seed:String(options.seed??'matchups'),deckType,difficulty},summary:aggregateGames(allGames),matchups};
+}
+
+module.exports={RULES,DATA,createRng,shuffle,starterDeck,randomLegalDeck,heuristicDeck,buildDeck,expectedCardValue,simulateGame,simulateBatch,simulateAllBartenderMatchups,createAggregateState,addGameToAggregate,finalizeAggregate,aggregateGames};
