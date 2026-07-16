@@ -1,5 +1,6 @@
 const assert=require('assert');
 const fs=require('fs');
+const path=require('path');
 const R=require('../js/rules.js');
 const AI=require('../js/ai.js');
 
@@ -39,7 +40,7 @@ assert.equal(AI.chooseBartender({current:beerBartender,bartenders,deck:marginalD
 assert.equal(AI.distanceToNextToken(14),1);
 assert.equal(AI.distanceToNextToken(30),15);
 
-const source=fs.readFileSync('js/ai.js','utf8');
+const source=fs.readFileSync(path.join(__dirname,'../js/ai.js'),'utf8');
 assert(!source.includes('opponent'),'AI engine must not accept or inspect opponent state.');
 assert(!source.includes('state.players'),'AI engine must not inspect match player state.');
 console.log('All Prompt 5 AI tests passed.');

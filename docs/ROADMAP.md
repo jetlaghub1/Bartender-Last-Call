@@ -7,14 +7,14 @@
 4.1 Improve contrast, selection feedback, mobile layout, button states, and accessibility without changing gameplay — included in this reconstruction.
 5. Add Easy, Normal, and Hard AI — complete in v0.5.4.
 6. Complete private local hotseat PvP flow — complete in v0.5.5.
-7. Add an interactive tutorial.
-8. Audit all drink, customer, and bartender data.
-9. Remove artificial duplicate content and strengthen card roles.
-10. Create a deterministic shared simulation engine.
-11. Run a 100,000-game baseline balance study.
-12. Apply the smallest evidence-based balance patch.
-13. Iterate until balance targets are met.
-14. Redesign the commercial-style interface.
+7. Add an interactive tutorial — complete in v0.5.6.
+8. Audit all drink, customer, and bartender data — complete in v0.5.7.
+9. Remove artificial duplicate content and strengthen card roles — complete in v0.5.8.
+10. Create a deterministic shared simulation engine — complete in v0.5.9.
+11. Run a 100,000-game baseline balance study — complete in development version v0.5.10.
+12. Apply the smallest evidence-based balance patch — complete in v0.5.11.
+13. Iterate until balance targets are met — complete in v0.5.12.
+14. Redesign the commercial-style interface — complete in v0.6.0.
 15. Approve a consistent art specification.
 16. Generate production art in batches of eight.
 17. Add sound and animation.
