@@ -80,4 +80,4 @@ Extract the GitHub ZIP and upload its contents, not the enclosing folder, so thi
 
 ## Status
 
-Prompt 16 batch 02 is complete in v0.7.1. The art now establishes the game’s brand, environments, evaluation icons, and the first four bartender identities without changing gameplay or the converged v0.5.12 balance values. Prompt 16 remains the active repeatable milestone until all manifest assets are produced; the next batch begins with order 17. See `docs/ROADMAP.md`.
+Prompt 16 batch 03 is complete in v0.7.2. The art now establishes the game’s brand, environments, evaluation icons, all seven bartender identities, and the first five customer identities without changing gameplay or the converged v0.5.12 balance values. Prompt 16 remains the active repeatable milestone until all manifest assets are produced; the next batch begins with order 25. See `docs/ROADMAP.md`.

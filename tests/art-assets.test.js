@@ -7,12 +7,12 @@ const manifest=JSON.parse(fs.readFileSync(path.join(root,'art/asset-manifest.jso
 const css=fs.readFileSync(path.join(root,'css/styles.css'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,'js/app.js'),'utf8');
-const produced=[...manifest.system,...manifest.bartenders].filter(asset=>asset.order<=16);
+const produced=[...manifest.system,...manifest.bartenders,...manifest.customers].filter(asset=>asset.order<=24);
 
-assert.equal(manifest.manifestVersion,'1.2.0');
-assert.deepEqual(manifest.production,{completedThroughOrder:16,completedAssets:16,nextOrder:17,lastBatch:'prompt16-batch02'});
-assert.equal(produced.length,16);
-assert(produced.every(asset=>asset.status==='approved'&&/^prompt16-batch0[12]$/.test(asset.batch)));
+assert.equal(manifest.manifestVersion,'1.3.0');
+assert.deepEqual(manifest.production,{completedThroughOrder:24,completedAssets:24,nextOrder:25,lastBatch:'prompt16-batch03'});
+assert.equal(produced.length,24);
+assert(produced.every(asset=>asset.status==='approved'&&/^prompt16-batch0[123]$/.test(asset.batch)));
 
 for(const asset of produced){
   const file=path.join(root,manifest.runtimeRoot,asset.file);
@@ -50,10 +50,14 @@ assert(html.includes('assets/art/brand/logo_mark.svg'));
 assert(app.includes('assets/art/brand/logo_wordmark.svg'));
 assert(app.includes('assets/art/icons/icon_switch-token.png'));
 for(const icon of ['icon_appeal.png','icon_love.png','icon_like.png','icon_dislike.png'])assert(app.includes(`assets/art/icons/${icon}`),`Missing live icon integration: ${icon}`);
-for(const bartender of ['bartender_ace_beer.webp','bartender_mara_vodka.webp','bartender_theo_whiskey.webp','bartender_june_rum.webp'])assert(app.includes(`assets/art/bartenders/${bartender}`),`Missing live bartender integration: ${bartender}`);
+for(const bartender of ['bartender_ace_beer.webp','bartender_mara_vodka.webp','bartender_theo_whiskey.webp','bartender_june_rum.webp','bartender_nico_gin.webp','bartender_sol_tequila.webp','bartender_rae_wine.webp'])assert(app.includes(`assets/art/bartenders/${bartender}`),`Missing live bartender integration: ${bartender}`);
+for(const customer of ['customer_c01_college-regular.webp','customer_c02_night-shift-nurse.webp','customer_c03_whiskey-collector.webp','customer_c04_garden-club-host.webp','customer_c05_beach-traveler.webp'])assert(app.includes(`assets/art/customers/${customer}`),`Missing live customer integration: ${customer}`);
 assert(fs.existsSync(path.join(root,'art/masters/prompt16-batch01/background_main-bar_source.png')));
 assert(fs.existsSync(path.join(root,'art/masters/prompt16-batch01/background_match-table_source.png')));
 for(const icon of ['appeal','love','like','dislike'])assert(fs.existsSync(path.join(root,`art/masters/prompt16-batch02/icon_${icon}.svg`)),`Missing editable icon master: ${icon}`);
 for(const bartender of ['ace_beer','mara_vodka','theo_whiskey','june_rum'])assert(fs.existsSync(path.join(root,`art/masters/prompt16-batch02/bartender_${bartender}_source.png`)),`Missing bartender source: ${bartender}`);
+for(const bartender of ['nico_gin','sol_tequila','rae_wine'])assert(fs.existsSync(path.join(root,`art/masters/prompt16-batch03/bartender_${bartender}_source.png`)),`Missing Batch 03 bartender source: ${bartender}`);
+for(const customer of ['c01_college-regular','c02_night-shift-nurse','c03_whiskey-collector','c04_garden-club-host','c05_beach-traveler'])assert(fs.existsSync(path.join(root,`art/masters/prompt16-batch03/customer_${customer}_source.png`)),`Missing Batch 03 customer source: ${customer}`);
+assert(css.includes('.customer-avatar.has-art'),'Customer portraits must have a live circular-thumbnail treatment.');
 
-console.log('All Prompt 16 production-art tests passed through batch 02.');
+console.log('All Prompt 16 production-art tests passed through batch 03.');

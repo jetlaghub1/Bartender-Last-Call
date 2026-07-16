@@ -133,5 +133,26 @@ Validation date: 2026-07-15
 - Prompt 16 batch 02 remaining bartender glyph fallbacks: PASS (Nico, Sol, and Rae pending their ordered art batch)
 - Prompt 16 batch 02 browser console warnings/errors: PASS (none)
 - Prompt 16 batch 02 gameplay, AI, rules, content, switch-token behavior, and balance values unchanged: PASS
+- v0.7.1a portrait containers match the 3:4 source-art ratio: PASS
+- v0.7.1a bartender portrait/title separation: PASS (13px gap; no overlap)
+- v0.7.1a desktop bartender layout at 1280x720 with no horizontal overflow: PASS
+- v0.7.1a phone bartender layout at 390x844 with two columns and no horizontal overflow: PASS
+- v0.7.1a four runtime portraits load at 768x1024: PASS
+- v0.7.1a browser console warnings/errors: PASS (none)
+- v0.7.1a complete automated regression suite: PASS (17 of 17 test files)
+- v0.7.1a gameplay, AI, rules, balance, content, and Prompt 16 production order unchanged: PASS
+- Prompt 16 batch 03 exact manifest orders 17–24: PASS
+- Prompt 16 batch 03 three bartender sources at 1086×1448 and runtime exports at 768×1024: PASS
+- Prompt 16 batch 03 five customer sources at 1254×1254 and runtime exports at 768×768: PASS
+- Prompt 16 batch 03 all seven bartender selection portraits load with no fallbacks: PASS
+- Prompt 16 batch 03 all seven bartender portrait ratios are 3:4 with no title overlap: PASS
+- Prompt 16 batch 03 produced customer portrait loads in live customer panel: PASS (Beach Traveler at 768×768)
+- Prompt 16 batch 03 unfinished customers retain initials fallback: PASS (Steakhouse Chef)
+- Prompt 16 batch 03 desktop layout at 1280×720 with no horizontal overflow: PASS
+- Prompt 16 batch 03 phone layout at 390×844 with no horizontal overflow: PASS
+- Prompt 16 batch 03 live preference labels and values remain visible: PASS
+- Prompt 16 batch 03 browser console warnings/errors: PASS (none)
+- Prompt 16 batch 03 complete automated regression suite: PASS (17 of 17 test files)
+- Prompt 16 batch 03 gameplay, AI, rules, balance, switch-token behavior, and content data unchanged: PASS
 
 The browser checks ran against a local HTTP server. The public build remains dependency-free and can also launch by opening `index.html` directly after extraction.

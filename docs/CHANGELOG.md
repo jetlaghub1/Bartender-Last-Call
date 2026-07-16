@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.7.2-prompt16-batch03 — complete bartender roster and first customers
+
+- Added production portraits for Nico, Sol, and Rae, completing the seven-bartender art roster.
+- Added production portraits for College Regular, Night Shift Nurse, Whiskey Collector, Garden Club Host, and Beach Traveler.
+- Integrated all seven bartenders into selection cards and match HUD avatars.
+- Integrated the first five customers into live circular customer portraits while preserving initials for unfinished customers.
+- Advanced the production manifest through order 24; order 25 is next.
+- Changed presentation only; gameplay, rules, AI, balance, and content data remain unchanged.
+
+## v0.7.1a — bartender portrait layout hotfix
+
+- Replaced the 106px-tall bartender portrait crop with the artwork's native 3:4 presentation.
+- Kept bartender names, specialties, and passive text below the image so the information panel no longer appears to cover the portrait.
+- Uses a two-column bartender grid on standard phones and a one-column layout only on very narrow screens.
+- Changed presentation only; gameplay, rules, AI, balance, content, and Prompt 16 production order remain unchanged.
+
 ## v0.5.3 — GitHub baseline
 
 - Reconstructed a playable source repository from the documented v0.5.2a state.

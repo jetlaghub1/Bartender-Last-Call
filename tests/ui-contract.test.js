@@ -25,7 +25,10 @@ assert(app.includes('Customer preferences')&&app.includes('pref-value'),'Custome
 assert(app.includes('switch-token')&&app.includes('Earn more at $15, $30, and $45'),'Switch availability and thresholds must be obvious.');
 assert(css.includes('.decision-bar{position:sticky'),'The Lock In decision area must remain available during long hands.');
 assert(css.includes('@media(max-width:560px)')&&css.includes('@media(max-width:370px)'),'Phone and narrow-phone layouts must be explicit.');
-assert(html.includes('v0.7.1 · Art Batch 02'),'The browser build must identify the current production-art batch.');
+assert(html.includes('v0.7.2 · Art Batch 03'),'The browser build must identify the current production-art batch.');
+assert(css.includes('.bartender-card .portrait{width:100%;height:auto;aspect-ratio:3/4'),'Bartender portraits must display in their native 3:4 frame instead of a short crop.');
+assert(!css.includes('.bartender-card .portrait.has-art{width:100%;height:106px'),'The old 106px portrait crop must not return.');
+assert(app.includes('function customerPortrait(customer)')&&css.includes('.customer-avatar.has-art'),'Produced customer portraits must appear in the live customer panel.');
 assert(html.indexOf('js/storage.js')<html.indexOf('js/app.js'),'Deck storage must load before the game app.');
 assert(app.includes('role="status"')&&storage.includes('Deck saved'),'Deck saving must provide visible status feedback.');
 assert(app.includes("home(result.message,result.persistent?'success':'warning')"),'The home screen must distinguish permanent and session-only saves.');

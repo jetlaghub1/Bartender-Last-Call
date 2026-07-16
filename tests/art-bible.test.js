@@ -9,7 +9,7 @@ const reference=fs.readFileSync(path.join(__dirname,'../art/reference-sheet.html
 const tokens=fs.readFileSync(path.join(__dirname,'../art/style-tokens.css'),'utf8');
 const all=[...manifest.system,...manifest.bartenders,...manifest.customers,...manifest.drinks];
 
-assert.equal(manifest.manifestVersion,'1.2.0');
+assert.equal(manifest.manifestVersion,'1.3.0');
 assert.equal(manifest.batchSize,8,'Prompt 16 batches must stay capped at eight assets.');
 assert.deepEqual(manifest.counts,{system:12,bartenders:7,customers:28,drinks:42,total:89});
 assert.equal(all.length,manifest.counts.total,'Manifest total must match every listed production asset.');
@@ -33,7 +33,7 @@ assert.deepEqual(manifest.specs.bartender.master,[1536,2048]);
 assert.deepEqual(manifest.specs.customer.master,[1536,1536]);
 assert.deepEqual(manifest.specs.frame.master,[1800,2520]);
 assert.deepEqual(manifest.specs.icon.runtime,[64,64]);
-assert.deepEqual(manifest.production,{completedThroughOrder:16,completedAssets:16,nextOrder:17,lastBatch:'prompt16-batch02'});
+assert.deepEqual(manifest.production,{completedThroughOrder:24,completedAssets:24,nextOrder:25,lastBatch:'prompt16-batch03'});
 
 assert(bible.includes('North star: replayability first'),'The art bible must protect fun and replayability as its first principle.');
 assert(/supports fast game decisions and repeated-play recognition/i.test(bible),'The review gate must connect visual approval to gameplay.');
