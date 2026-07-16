@@ -1,7 +1,4 @@
-id,drink,spirit,before_price,after_price,reason
-d4,Spiced Saison,Beer,14,20,Raise Ace from the weak Beer starting-bartender result using the most-selected Beer specialist card.
-d8,Market Mule,Vodka,14,20,Raise Mara from the weakest starting-bartender result using the most-selected Vodka specialist card.
-d16,Smoked Manhattan,Whiskey,22,20,Reduce Theo using the high-price Whiskey anchor without changing Whiskey traits or Appeal.
-d29,Pepper Negroni,Gin,18,16,Reduce Nico with a one-payout-step change to a frequently selected Gin card.
-d36,Platinum Añejo,Tequila,22,21,Reduce Sol by one winner-payout step while preserving this card as the premium Tequila tiebreaker.
-d37,Velvet Merlot,Wine,16,12,"Reduce Rae using the high-selection, high-served-win Wine card identified by the baseline."
+scope,games,switches,switch_opportunities,tokens_earned_including_starting_tokens,tokens_remaining,average_switches_per_game,switch_decision_rate,token_spend_rate,average_unspent_tokens_per_game
+overall,100000,293436,1869491,715506,422070,2.93436,0.15696037049656833,0.41010976847154323,4.2207
+random,50000,237601,782687,357417,119816,4.75202,0.3035709038223453,0.6647725206131774,2.39632
+heuristic,50000,55835,1086804,358089,302254,1.1167,0.051375408997390515,0.15592492369215474,6.04508

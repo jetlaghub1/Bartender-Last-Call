@@ -1,14 +1,14 @@
-# Content Changelog v0.5.11
+# Prompt 6 local PvP privacy flow
 
-Prompt 12 changes drink prices only:
+Local PvP uses one shared device. Privacy is enforced by replacing the visible interface at every handoff.
 
-- Spiced Saison: $14 → $20
-- Market Mule: $14 → $20
-- Smoked Manhattan: $22 → $20
-- Pepper Negroni: $18 → $16
-- Platinum Añejo: $22 → $21
-- Velvet Merlot: $16 → $12
+1. Player 1 privately handles any available bartender switch.
+2. If Player 2 has a switch token, a blank pass-device screen appears before their bartender choice.
+3. After setup, a blank pass-device screen returns the device to Player 1 before either hand appears.
+4. Player 1 selects and locks three drinks. Their hand is removed from the page.
+5. A blank pass-device screen appears before Player 2's hand is rendered.
+6. Player 2 selects and locks three drinks.
+7. A neutral confirmation screen displays no hand or drink choice. Both players place the device where they can see it and press **Reveal Drinks** together.
+8. Only then are the drinks resolved and displayed.
 
-No drink traits, names, IDs, customers, bartender specialties, passive abilities, rules, payout formula, thresholds, deck constraints, or victory values changed.
-
-The same-seed 100,000-game comparison is stored under `reports/prompt12/`.
+This protects choices during ordinary pass-the-device play. Like any local browser game, it is not intended to defend against someone opening developer tools or modifying the client.

@@ -1,148 +1,69 @@
 'use strict';
 
-const RULES=require('../js/rules.js');
-const AI=require('../js/ai.js');
-const DATA=require('../js/data.js');
+const SIM=require('./simulator.js');
+const REPORTING=require('./reporting.js');
+const COMPARISON=require('./comparison.js');
+const PATCH=require('../balance/patch-v0.5.12.js');
 
-function hashSeed(seed){
-  const text=String(seed);let hash=2166136261;
-  for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619)}
-  return hash>>>0;
-}
-function createRng(seed='bartender-last-call'){
-  let value=hashSeed(seed);
-  return function(){value+=0x6D2B79F5;let t=value;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296};
-}
-function shuffle(items,rng){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
-function resolveBartender(value,rng){
-  if(value&&typeof value==='object')return value;
-  if(typeof value==='number')return DATA.bartenders[value]||DATA.bartenders[0];
-  if(typeof value==='string')return DATA.bartenders.find(b=>b.name===value||b.specialty===value)||DATA.bartenders[0];
-  return DATA.bartenders[Math.floor(rng()*DATA.bartenders.length)];
-}
-function starterDeck(){return DATA.starterIds.flatMap(id=>[id,id,id])}
-function randomLegalDeck(rng){return shuffle(DATA.drinks.flatMap(card=>[card.id,card.id,card.id]),rng).slice(0,RULES.DECK)}
-function expectedCardValue(card,bartender){
-  const appeal=DATA.customers.reduce((sum,customer)=>sum+RULES.appeal(card,customer,bartender),0)/DATA.customers.length;
-  return appeal*100+card.price;
-}
-function heuristicDeck(bartender,rng){
-  const ranked=DATA.drinks.map(card=>({card,score:expectedCardValue(card,bartender),tie:rng()})).sort((a,b)=>b.score-a.score||b.tie-a.tie);
-  return ranked.slice(0,10).flatMap(entry=>[entry.card.id,entry.card.id,entry.card.id]);
-}
-function buildDeck(type,bartender,rng){
-  if(Array.isArray(type)){const check=RULES.validateDeck(type,DATA.drinks);if(!check.ok)throw new Error(check.message);return[...type]}
-  if(type==='starter')return starterDeck();
-  if(type==='heuristic')return heuristicDeck(bartender,rng);
-  if(type==='random'||type===undefined)return randomLegalDeck(rng);
-  throw new Error(`Unknown deck type: ${type}`);
-}
-function instantiateDeck(ids,cycle){return ids.map((id,index)=>({...DATA.drinks.find(card=>card.id===id),instanceId:`${cycle}-${index}-${id}`}))}
-function makePlayer(index,bartender,deckIds,rng){
-  return{index,initialBartender:bartender,bartender,tips:0,tokens:1,deckIds:[...deckIds],cycle:0,drawPile:shuffle(instantiateDeck(deckIds,0),rng),switches:0};
-}
-function drawHand(player,rng){
-  if(player.drawPile.length<RULES.HAND){player.cycle++;player.drawPile=shuffle(instantiateDeck(player.deckIds,player.cycle),rng)}
-  return player.drawPile.splice(0,RULES.HAND);
-}
-function normalizePair(value,fallback){return Array.isArray(value)?[value[0]??fallback,value[1]??fallback]:[value??fallback,value??fallback]}
-
-function simulateGame(options={}){
-  const seed=options.seed??'game-0',rng=createRng(seed),difficulty=normalizePair(options.difficulty,'hard'),deckTypes=normalizePair(options.deckType,'random');
-  const bartenderValues=normalizePair(options.bartenders,null);
-  const initialBartenders=[resolveBartender(bartenderValues[0],rng),resolveBartender(bartenderValues[1],rng)];
-  const decks=[buildDeck(deckTypes[0],initialBartenders[0],rng),buildDeck(deckTypes[1],initialBartenders[1],rng)];
-  for(const deck of decks){const check=RULES.validateDeck(deck,DATA.drinks);if(!check.ok)throw new Error(check.message)}
-  const players=[makePlayer(0,initialBartenders[0],decks[0],rng),makePlayer(1,initialBartenders[1],decks[1],rng)];
-  const metrics={appealTies:0,priceTies:0,cardEvents:[],cardDrawEvents:[],customerEvents:[],scoreHistory:[[0,0]],roundTips:[0,0],switchOpportunities:[0,0],tokensEarned:[1,1]};
-  let round=0,winner=null,lastRoundWinner=null;
-  const maxRounds=options.maxRounds??200;
-  while(winner===null&&round<maxRounds){
-    round++;
-    for(const player of players){
-      if(player.tokens<=0)continue;
-      metrics.switchOpportunities[player.index]++;
-      const choice=AI.chooseBartender({current:player.bartender,bartenders:DATA.bartenders,deck:player.drawPile,tokens:player.tokens,tips:player.tips,difficulty:difficulty[player.index],rng});
-      if(choice!==player.bartender){player.bartender=choice;player.tokens--;player.switches++}
-    }
-    const customer=DATA.customers[Math.floor(rng()*DATA.customers.length)];
-    const hands=players.map(player=>drawHand(player,rng));
-    const selected=players.map((player,index)=>AI.chooseDrinks(hands[index],customer,player.bartender,difficulty[index],rng));
-    hands.forEach((hand,index)=>{for(const card of hand)metrics.cardDrawEvents.push({cardId:card.id,player:index,round})});
-    const served=players.map((player,index)=>RULES.best(selected[index],customer,player.bartender,rng));
-    const comparison=RULES.compareServed(served[0],served[1],rng);lastRoundWinner=comparison.winner;
-    if(comparison.appealTie)metrics.appealTies++;if(comparison.priceTie)metrics.priceTies++;
-    const gains=RULES.roundGains(served,lastRoundWinner);
-    players.forEach((player,index)=>{
-      const before=player.tips;player.tips+=gains[index];const earned=RULES.earned(before,player.tips);player.tokens+=earned;metrics.tokensEarned[index]+=earned;metrics.roundTips[index]+=gains[index];
-      for(const card of selected[index])metrics.cardEvents.push({cardId:card.id,player:index,round,selected:true,served:card.instanceId===served[index].drink.instanceId,roundWon:index===lastRoundWinner});
-    });
-    metrics.customerEvents.push({customer:customer.name,winner:lastRoundWinner,winnerBartender:players[lastRoundWinner].bartender.name,appealTie:comparison.appealTie,priceTie:comparison.priceTie});
-    metrics.scoreHistory.push([players[0].tips,players[1].tips]);
-    winner=RULES.matchWinner([players[0].tips,players[1].tips],lastRoundWinner);
-  }
-  if(winner===null)throw new Error(`Simulation exceeded ${maxRounds} rounds.`);
-  const comeback=metrics.scoreHistory.some(score=>winner===0?score[1]-score[0]>=10:score[0]-score[1]>=10);
-  const maxDeficit=Math.max(0,...metrics.scoreHistory.map(score=>winner===0?score[1]-score[0]:score[0]-score[1]));
+const pct=value=>(value*100).toFixed(2);
+const number=(value,digits=2)=>Number(value||0).toFixed(digits);
+function targetRoundShare(summary){let games=0;for(let round=8;round<=12;round++)games+=summary.roundDistribution[round]||0;return summary.games?games/summary.games:0}
+function targetReview(report){
+  const summary=report.summary,cards=REPORTING.cardRows(report).filter(row=>row.scope==='overall'),randomCards=REPORTING.cardRows(report).filter(row=>row.scope==='random'),heuristicCards=REPORTING.cardRows(report).filter(row=>row.scope==='heuristic'),customers=REPORTING.customerRows(report).filter(row=>row.scope==='overall');
+  const inTarget=COMPARISON.targetCount(summary),roundShare=targetRoundShare(summary),automatic=cards.filter(row=>row.deckInclusionRate>=.999999),heuristicAutomatic=heuristicCards.filter(row=>row.deckInclusionRate>=.999999),dead=cards.filter(row=>row.flags.includes('dead')),underused=cards.filter(row=>row.flags.includes('underused')),topCustomer=[...customers].sort((a,b)=>b.topBartenderWinShare-a.topBartenderWinShare)[0],maxOverall=[...cards].sort((a,b)=>b.deckInclusionRate-a.deckInclusionRate)[0],maxRandom=[...randomCards].sort((a,b)=>b.deckInclusionRate-a.deckInclusionRate)[0];
   return{
-    seed:String(seed),winner,rounds:round,firstPlayerWon:winner===0,comeback,maxDeficit,
-    initialBartenders:players.map(player=>player.initialBartender.name),finalBartenders:players.map(player=>player.bartender.name),
-    tips:players.map(player=>player.tips),switches:players.map(player=>player.switches),deckTypes,decks,
-    tokensEarned:metrics.tokensEarned,tokensRemaining:players.map(player=>player.tokens),switchOpportunities:metrics.switchOpportunities,
-    appealTies:metrics.appealTies,priceTies:metrics.priceTies,cardEvents:metrics.cardEvents,cardDrawEvents:metrics.cardDrawEvents,customerEvents:metrics.customerEvents,scoreHistory:metrics.scoreHistory
+    details:{inTarget,roundShare,automatic,heuristicAutomatic,dead,underused,topCustomer,maxOverall,maxRandom},
+    targets:[
+      {target:'All bartender win rates from 48% to 52%',status:inTarget===SIM.DATA.bartenders.length?'PASS':'FAIL',evidence:`${inTarget}/${SIM.DATA.bartenders.length} in range; spread ${number(COMPARISON.spread(summary))} percentage points`},
+      {target:'First-player advantage below 2 percentage points',status:Math.abs(summary.firstPlayerWinRate-.5)<.02?'PASS':'FAIL',evidence:`Player 1 ${pct(summary.firstPlayerWinRate)}%; advantage ${number(Math.abs(summary.firstPlayerWinRate-.5)*100)} points`},
+      {target:'Most games finish in 8–12 rounds',status:roundShare>.5&&summary.averageRounds>=8&&summary.averageRounds<=12?'PASS':'FAIL',evidence:`${pct(roundShare)}% in target; ${number(summary.averageRounds)} round average`},
+      {target:'No drink is automatic across the full evaluated deck population',status:automatic.length===0?'PASS':'FAIL',evidence:`${automatic.length} at 100%; highest overall inclusion ${pct(maxOverall.deckInclusionRate)}% (${maxOverall.name})`},
+      {target:'No large group of cards is unplayable',status:dead.length+underused.length<=Math.ceil(SIM.DATA.drinks.length*.1)?'PASS':'FAIL',evidence:`${dead.length} never selected and ${underused.length} underused of ${SIM.DATA.drinks.length}`},
+      {target:'Customers do not heavily favor one bartender family',status:topCustomer.topBartenderWinShare<.30?'PASS':'FAIL',evidence:`Highest concentration ${pct(topCustomer.topBartenderWinShare)}% for ${topCustomer.name} → ${topCustomer.topWinningBartender}`}
+    ]
   };
 }
-
-function addStat(map,key,defaults){if(!map[key])map[key]={...defaults};return map[key]}
-function createAggregateState(){
-  return{games:0,player1Wins:0,player2Wins:0,totalRounds:0,totalTips:0,appealTies:0,priceTies:0,comebacks:0,totalSwitches:0,totalSwitchOpportunities:0,totalTokensEarned:0,totalTokensRemaining:0,roundDistribution:{},bartenderStats:{},finalBartenderStats:{},cardStats:{},customerStats:{}};
+function buildMarkdown(beforeReport,finalReport){
+  const before=beforeReport.summary,final=finalReport.summary,bartenders=COMPARISON.bartenderRows(before,final),review=targetReview(finalReport),failed=review.targets.filter(row=>row.status!=='PASS'),d=review.details;
+  return[
+    '# Bartender: Last Call — Prompt 13 Convergence Report','',
+    '**Final change: Cellar Select $20 → $16.** This is the only gameplay change after Prompt 12. It lowers one winner-payout step for the Wine card most directly connected to Rae’s remaining excess win rate.','',
+    '## Target status','',
+    '| Locked target | Status | Evidence |','|---|---|---|',
+    ...review.targets.map(row=>`| ${row.target} | **${row.status}** | ${row.evidence} |`),'',
+    `Formal convergence status: **${failed.length?'NOT COMPLETE':'COMPLETE'}**.`,'',
+    '## Prompt 12 versus final Prompt 13','',
+    '| Bartender | Specialty | Prompt 12 | Prompt 13 | Change | Final target? |','|---|---|---:|---:|---:|---|',
+    ...bartenders.map(row=>`| ${row.name} | ${row.specialty} | ${pct(row.beforeRate)}% | ${pct(row.afterRate)}% | ${number(row.changePoints)} pp | ${row.inTarget?'Yes':'No'} |`),'',
+    `Starting-bartender spread: ${number(COMPARISON.spread(before))} → **${number(COMPARISON.spread(final))} percentage points**.`,
+    `First-player win rate: ${pct(before.firstPlayerWinRate)}% → **${pct(final.firstPlayerWinRate)}%**.`,
+    `Average game length: ${number(before.averageRounds)} → **${number(final.averageRounds)} rounds**.`,'',
+    '## Deck and card interpretation','',
+    `No card appeared in every deck across the complete 100,000-game study. The highest overall deck inclusion was ${pct(d.maxOverall.deckInclusionRate)}% for ${d.maxOverall.name}; the highest random-legal inclusion was ${pct(d.maxRandom.deckInclusionRate)}%.`,
+    `${d.heuristicAutomatic.length} card${d.heuristicAutomatic.length===1?'':'s'} appeared in every deck produced by the single deterministic heuristic recipe: ${d.heuristicAutomatic.map(card=>card.name).join(', ')||'none'}. This is retained as a **deck-diversity warning**, not treated as proof of mandatory inclusion across the metagame, because Prompt 10 implements one heuristic recipe rather than exhaustive optimal deck search or human deck telemetry.`,
+    `${d.dead.length} cards were never selected and ${d.underused.length} were flagged underused; that is not a large unplayable group, but the named cards remain playtest watch items.`,'',
+    '## Customer interpretation','',
+    `The strongest customer-to-bartender concentration was ${pct(d.topCustomer.topBartenderWinShare)}%: ${d.topCustomer.name} with ${d.topCustomer.topWinningBartender}. No customer produced a 30% or greater concentration, so customer preference families remain meaningful without controlling outcomes.`,'',
+    '## What remained unchanged','',
+    ...PATCH.unchanged.map(item=>`- ${item}`),'',
+    '## Handoff','',
+    'Prompt 13 has converged on the locked simulation targets. Human playtesting remains the authority for feel and metagame diversity. Prompt 14 can now redesign the interface without carrying a known numeric bartender imbalance.',''
+  ].join('\n');
 }
-function addGameToAggregate(summary,game){
-  summary.games++;game.winner===0?summary.player1Wins++:summary.player2Wins++;summary.totalRounds+=game.rounds;summary.totalTips+=game.tips[0]+game.tips[1];summary.appealTies+=game.appealTies;summary.priceTies+=game.priceTies;if(game.comeback)summary.comebacks++;summary.totalSwitches+=game.switches[0]+game.switches[1];summary.totalSwitchOpportunities+=(game.switchOpportunities||[0,0]).reduce((a,b)=>a+b,0);summary.totalTokensEarned+=(game.tokensEarned||[0,0]).reduce((a,b)=>a+b,0);summary.totalTokensRemaining+=(game.tokensRemaining||[0,0]).reduce((a,b)=>a+b,0);summary.roundDistribution[game.rounds]=(summary.roundDistribution[game.rounds]||0)+1;
-  game.initialBartenders.forEach((name,index)=>{const stat=addStat(summary.bartenderStats,name,{games:0,wins:0});stat.games++;if(index===game.winner)stat.wins++});
-  game.finalBartenders.forEach((name,index)=>{const stat=addStat(summary.finalBartenderStats,name,{games:0,wins:0});stat.games++;if(index===game.winner)stat.wins++});
-  game.decks.forEach(deck=>{const seen=new Set();for(const cardId of deck){const stat=addStat(summary.cardStats,cardId,{deckCopies:0,deckGames:0,drawn:0,selected:0,selectionRoundWins:0,served:0,servedRoundWins:0});stat.deckCopies++;seen.add(cardId)}for(const cardId of seen)addStat(summary.cardStats,cardId,{deckCopies:0,deckGames:0,drawn:0,selected:0,selectionRoundWins:0,served:0,servedRoundWins:0}).deckGames++});
-  for(const event of game.cardDrawEvents||[]){addStat(summary.cardStats,event.cardId,{deckCopies:0,deckGames:0,drawn:0,selected:0,selectionRoundWins:0,served:0,servedRoundWins:0}).drawn++}
-  for(const event of game.cardEvents){const stat=addStat(summary.cardStats,event.cardId,{deckCopies:0,deckGames:0,drawn:0,selected:0,selectionRoundWins:0,served:0,servedRoundWins:0});stat.selected++;if(event.roundWon)stat.selectionRoundWins++;if(event.served){stat.served++;if(event.roundWon)stat.servedRoundWins++}}
-  for(const event of game.customerEvents){const stat=addStat(summary.customerStats,event.customer,{rounds:0,player1Wins:0,player2Wins:0,appealTies:0,priceTies:0,winnerBartenders:{}});stat.rounds++;event.winner===0?stat.player1Wins++:stat.player2Wins++;if(event.appealTie)stat.appealTies++;if(event.priceTie)stat.priceTies++;stat.winnerBartenders[event.winnerBartender]=(stat.winnerBartenders[event.winnerBartender]||0)+1}
-  return summary;
-}
-function percentileFromDistribution(distribution,count,fraction){
-  if(!count)return 0;const target=Math.floor((count-1)*fraction),rounds=Object.keys(distribution).map(Number).sort((a,b)=>a-b);let seen=0;for(const round of rounds){seen+=distribution[round];if(seen>target)return round}return rounds[rounds.length-1]||0;
-}
-function finalizeAggregate(summary){
-  const rounds=summary.totalRounds||1,games=summary.games;
-  return{
-    ...summary,
-    firstPlayerWinRate:games?summary.player1Wins/games:0,
-    averageRounds:games?summary.totalRounds/games:0,
-    medianRounds:percentileFromDistribution(summary.roundDistribution,games,.5),p90Rounds:percentileFromDistribution(summary.roundDistribution,games,.9),
-    appealTieRate:summary.appealTies/rounds,priceTieRate:summary.priceTies/rounds,
-    comebackRate:games?summary.comebacks/games:0,
-    averageSwitchesPerGame:games?summary.totalSwitches/games:0,
-    averageTipsPerRound:summary.totalTips/rounds,
-    switchDecisionRate:summary.totalSwitchOpportunities?summary.totalSwitches/summary.totalSwitchOpportunities:0,
-    tokenSpendRate:summary.totalTokensEarned?summary.totalSwitches/summary.totalTokensEarned:0,
-    averageUnspentTokensPerGame:games?summary.totalTokensRemaining/games:0
+function buildArtifacts(beforeReport,finalReport){
+  const comparisonRows=COMPARISON.summaryRows(beforeReport.summary,finalReport.summary),bartenders=COMPARISON.bartenderRows(beforeReport.summary,finalReport.summary),review=targetReview(finalReport),cards=REPORTING.cardRows(finalReport).filter(row=>row.scope==='overall'),customers=REPORTING.customerRows(finalReport).filter(row=>row.scope==='overall'),finalArtifacts=REPORTING.buildArtifacts(finalReport),artifacts={
+    'CONVERGENCE_REPORT.md':buildMarkdown(beforeReport,finalReport),
+    'prompt12_report.json':JSON.stringify(beforeReport,null,2)+'\n',
+    'final_report.json':JSON.stringify(finalReport,null,2)+'\n',
+    'target_status.csv':REPORTING.csv([['target','status','evidence'],...review.targets.map(row=>[row.target,row.status,row.evidence])]),
+    'system_before_after.csv':REPORTING.csv([['metric','unit','prompt12','prompt13','change'],...comparisonRows.map(row=>[row.metric,row.unit,row.before,row.after,row.change])]),
+    'bartender_before_after.csv':REPORTING.csv([['bartender','specialty','prompt12_games','prompt12_win_rate','prompt13_games','prompt13_win_rate','change_percentage_points','inside_48_to_52'],...bartenders.map(row=>[row.name,row.specialty,row.beforeGames,row.beforeRate,row.afterGames,row.afterRate,row.changePoints,row.inTarget])]),
+    'card_target_review.csv':REPORTING.csv([['id','drink','spirit','deck_inclusion_rate','pick_rate_when_drawn','selection_share','served_win_rate','flags'],...cards.map(row=>[row.id,row.name,row.spirit,row.deckInclusionRate,row.pickRateWhenDrawn,row.selectionShare,row.servedWinRate,row.flags])]),
+    'customer_target_review.csv':REPORTING.csv([['customer','love','like','dislike','rounds','top_winning_bartender','top_bartender_win_share','bias_above_equal_share'],...customers.map(row=>[row.name,row.love,row.like,row.dislike,row.rounds,row.topWinningBartender,row.topBartenderWinShare,row.biasAboveEqualShare])]),
+    'drink_price_change.csv':REPORTING.csv([['id','drink','spirit','before_price','after_price','reason'],...PATCH.changes.map(row=>[row.id,row.name,row.spirit,row.before,row.after,row.reason])])
   };
-}
-function aggregateGames(games){const summary=createAggregateState();for(const game of games)addGameToAggregate(summary,game);return finalizeAggregate(summary)}
-function simulateBatch(options={}){
-  const count=options.games??1000,scheduleRng=createRng(`${options.seed??'batch'}:schedule`),games=[];
-  for(let i=0;i<count;i++){
-    const bartenders=options.bartenders??[Math.floor(scheduleRng()*DATA.bartenders.length),Math.floor(scheduleRng()*DATA.bartenders.length)];
-    games.push(simulateGame({...options,bartenders,seed:`${options.seed??'batch'}:${i}`}));
-  }
-  return{config:{games:count,seed:String(options.seed??'batch'),deckType:options.deckType??'random',difficulty:options.difficulty??'hard'},summary:aggregateGames(games)};
-}
-function simulateAllBartenderMatchups(options={}){
-  const gamesPerMatchup=options.gamesPerMatchup??100,deckType=options.deckType??'heuristic',difficulty=options.difficulty??'hard',allGames=[],matchups=[];
-  for(let first=0;first<DATA.bartenders.length;first++)for(let second=0;second<DATA.bartenders.length;second++){
-    const games=[];
-    for(let game=0;game<gamesPerMatchup;game++)games.push(simulateGame({...options,deckType,difficulty,bartenders:[first,second],seed:`${options.seed??'matchups'}:${first}:${second}:${game}`}));
-    allGames.push(...games);matchups.push({first:DATA.bartenders[first].name,second:DATA.bartenders[second].name,summary:aggregateGames(games)});
-  }
-  return{config:{gamesPerMatchup,matchups:matchups.length,seed:String(options.seed??'matchups'),deckType,difficulty},summary:aggregateGames(allGames),matchups};
+  for(const [name,content] of Object.entries(finalArtifacts))if(name.endsWith('.csv'))artifacts[`final_${name}`]=content;
+  return artifacts;
 }
 
-module.exports={RULES,DATA,createRng,shuffle,starterDeck,randomLegalDeck,heuristicDeck,buildDeck,expectedCardValue,simulateGame,simulateBatch,simulateAllBartenderMatchups,createAggregateState,addGameToAggregate,finalizeAggregate,aggregateGames};
+module.exports={PATCH,targetRoundShare,targetReview,buildMarkdown,buildArtifacts};

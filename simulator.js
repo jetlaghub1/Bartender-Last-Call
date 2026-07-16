@@ -1,37 +1,12 @@
-'use strict';
-
-const SIM=require('./simulator.js');
-
-function matchupFor(index){
-  const count=SIM.DATA.bartenders.length,pair=index%(count*count);
-  return[Math.floor(pair/count),pair%count];
-}
-
-function runBaseline(options={}){
-  const games=options.games??100000;
-  if(!Number.isInteger(games)||games<1)throw new Error('Baseline games must be a positive integer.');
-  const randomGames=options.randomGames??Math.floor(games/2),heuristicGames=games-randomGames;
-  if(randomGames<0||heuristicGames<0)throw new Error('Deck-stratum game counts cannot be negative.');
-  const seed=String(options.seed??'bartender-last-call-prompt11-v0.5.9'),difficulty=options.difficulty??'hard';
-  const overall=SIM.createAggregateState(),strata={random:SIM.createAggregateState(),heuristic:SIM.createAggregateState()},matchups=new Map();
-  let completed=0;
-  function runStratum(deckType,count){
-    for(let index=0;index<count;index++){
-      const pair=matchupFor(index),game=SIM.simulateGame({seed:`${seed}:${deckType}:${index}`,deckType,difficulty,bartenders:pair});
-      SIM.addGameToAggregate(overall,game);SIM.addGameToAggregate(strata[deckType],game);
-      const key=`${deckType}:${pair[0]}:${pair[1]}`;
-      if(!matchups.has(key))matchups.set(key,{deckType,first:pair[0],second:pair[1],state:SIM.createAggregateState()});
-      SIM.addGameToAggregate(matchups.get(key).state,game);
-      completed++;if(typeof options.onProgress==='function'&&(completed%5000===0||completed===games))options.onProgress({completed,games,deckType});
-    }
-  }
-  runStratum('random',randomGames);runStratum('heuristic',heuristicGames);
-  return{
-    config:{study:options.study??'Balance simulation',rulesVersion:'0.5',sourceVersion:options.sourceVersion??SIM.DATA.schemaVersion,games,randomGames,heuristicGames,seed,difficulty,bartenders:SIM.DATA.bartenders.length,orderedMatchups:SIM.DATA.bartenders.length**2,scheduling:'Round-robin ordered matchups within each deck stratum'},
-    summary:SIM.finalizeAggregate(overall),
-    strata:{random:SIM.finalizeAggregate(strata.random),heuristic:SIM.finalizeAggregate(strata.heuristic)},
-    matchups:[...matchups.values()].map(entry=>({deckType:entry.deckType,first:SIM.DATA.bartenders[entry.first].name,second:SIM.DATA.bartenders[entry.second].name,summary:SIM.finalizeAggregate(entry.state)})).sort((a,b)=>a.deckType.localeCompare(b.deckType)||a.first.localeCompare(b.first)||a.second.localeCompare(b.second))
-  };
-}
-
-module.exports={matchupFor,runBaseline};
+metric,unit,prompt12,prompt13,change
+first_player_win_rate,rate,0.50331,0.50199,-0.0013199999999999878
+average_rounds,number,11.16556,11.21676,0.05120000000000147
+median_rounds,number,11,11,0
+p90_rounds,number,12,13,1
+appeal_tie_rate,rate,0.3039695277263299,0.3038319443404334,-0.00013758338589647812
+price_tie_rate,rate,0.1474596885422675,0.14602166757602017,-0.0014380209662473165
+comeback_rate,rate,0.17463,0.17229,-0.0023400000000000087
+average_tips_per_round,number,8.157909679407034,8.124917534118588,-0.032992145288446295
+average_switches_per_game,number,2.93019,2.93436,0.004169999999999785
+starting_bartender_spread_points,points,4.6904102694412195,1.7079473231474518,-2.9824629462937677
+bartenders_in_48_to_52_target,count,6,7,1
