@@ -147,3 +147,16 @@
 - Verified zero never-selected cards and three underused cards, which is not a large unplayable group.
 - Recorded three deterministic-heuristic staples as a deck-diversity warning for human playtesting.
 - Added final target status, paired raw JSON, comparison CSVs, and convergence documentation.
+
+## v0.6.0-prompt14 — commercial interface redesign
+
+- Rebuilt the presentation around a brass, burgundy, and midnight-blue bar identity without changing gameplay or balance data.
+- Added a compact match HUD with player tips, bartender names, switch-token counts, round number, and progress to $50.
+- Reframed customers as clear guest dossiers with visible Love +3, Like +2, and Dislike −2 values.
+- Rebuilt drink cards with distinct spirit treatments, readable names and traits, live Appeal totals, component breakdowns, and a dedicated non-overlapping price footer.
+- Added an obvious bartender-switch summary, current-specialist treatment, token balance, and $15/$30/$45 earning reminders.
+- Added a sticky decision bar, exact selected-card count, disabled-state guidance, and clear selected-card feedback.
+- Rebuilt round results as a side-by-side service comparison with a prominent winner and tip payout.
+- Improved the deck builder, difficulty screen, menu, tutorial surfaces, privacy handoffs, touch targets, focus states, and reduced-motion behavior.
+- Verified a complete AI round and deck builder at desktop and 390×844 phone layouts with no horizontal overflow or browser console errors.
+- Used CSS-native card and character motifs only; no promotional collage is repeated as card artwork.

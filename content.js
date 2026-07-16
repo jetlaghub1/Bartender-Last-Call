@@ -80,5 +80,14 @@ Validation date: 2026-07-15
 - Prompt 13 maximum customer bartender concentration 25.48%: PASS
 - Prompt 13 round, winner, matchup, card-event, customer-event, and token totals reconcile: PASS
 - Prompt 13 raw JSON, target status, readable Markdown, and final CSV reports: PASS
+- Prompt 14 match HUD, customer dossier, exact Appeal details, switch-token summary, sticky decision bar, and result comparison contracts: PASS
+- Prompt 14 desktop layout at 1280×720 with no horizontal overflow: PASS
+- Prompt 14 phone layout at 390×844 with no horizontal overflow: PASS
+- Prompt 14 phone card-price layout with seven rendered cards and no text overlap: PASS
+- Prompt 14 three-card selection count and Lock In enablement: PASS
+- Prompt 14 complete Easy-AI round through results: PASS
+- Prompt 14 deck builder renders all 42 drinks with 44px phone controls: PASS
+- Prompt 14 browser console errors and warnings: PASS (none)
+- Prompt 14 uses CSS-native individual card motifs rather than repeated promotional artwork: PASS
 
-The automated in-app browser could not open a local `file://` URL because of its security policy, so no claim of automated visual browser completion is made. The application deliberately has no external dependencies and is designed to launch by opening `index.html` directly.
+The browser checks ran against a local HTTP server. The public build remains dependency-free and can also launch by opening `index.html` directly after extraction.

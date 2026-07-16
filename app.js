@@ -1,16 +1,37 @@
-# Prompt 7 interactive tutorial
+# Prompt 14 Interface Design
 
-The tutorial is offered on first visit, can be skipped, and remains replayable from both the main menu and How to Play screen.
+Version: v0.6.0  
+Scope: presentation and usability only
 
-## Lessons
+## Visual direction
 
-1. **Read the Customer:** tap Love, Like, and Dislike to learn +3, +2, and −2.
-2. **Calculate Appeal:** solve a live scoring example including bartender specialty.
-3. **Choose Three Drinks:** read a visible customer and select exactly three cards before continuing.
-4. **Serve the Best Match:** use the same customer and the player's actual three selections to identify the highest-Appeal drink.
-5. **Earn Tips:** calculate the winner's 25% plus $2 payout.
-6. **Switch Bartenders:** choose to save the token or spend it, select an actual replacement bartender, and see the new specialty and remaining token count.
-7. **Build a Legal Deck:** select the final three drinks from a small collection, see live copy counts, encounter the three-copy limit, and reach exactly 30 cards.
-8. **Reach Last Call:** identify the $50 victory target.
+Bartender: Last Call now uses a late-night cocktail-bar identity: midnight blue surfaces, burgundy atmosphere, warm brass highlights, ivory typography, and restrained neon player accents. Serif display type supplies character while the system sans-serif keeps rules and values readable.
 
-Completion is stored locally in the browser. The closing screen offers an Easy AI practice match or a return to the main menu.
+All temporary character and drink motifs are built from text and CSS. No single promotional collage or shared bitmap is repeated across cards. Prompt 15 will define the production-art specification before Prompt 16 creates final assets.
+
+## Information hierarchy
+
+1. The match HUD keeps tips, progress to $50, bartender, switch tokens, and round number visible.
+2. The customer dossier states Love +3, Like +2, and Dislike −2 before any card decision.
+3. Each drink card shows its identity, traits, exact Appeal total, contributing modifiers, and price in separate regions.
+4. The decision bar reports the exact selected count and explains the Lock In state.
+5. Results compare both served drinks and emphasize the winner and both payouts.
+
+## Responsive behavior
+
+- Seven columns on wide desktop, four below 1050px, three below 780px, two below 560px, and one below 370px.
+- The score HUD condenses into a round strip plus two compact player panels on phones.
+- Customer preferences stack into full-width rows on phones.
+- Deck controls remain at least 44×44px and the action area remains sticky.
+- Layouts were checked at 1280×720 and 390×844 with no horizontal overflow.
+
+## Accessibility
+
+- Near-white primary text and muted blue-gray secondary text on dark surfaces.
+- Visible keyboard focus outlines and clear enabled, disabled, selected, and winner states.
+- Semantic buttons, progress bars, ARIA labels for card summaries, and live selected-card/deck counts.
+- Reduced-motion preferences disable non-essential transitions and animation.
+
+## Gameplay preservation
+
+Prompt 14 does not change rules, prices, content, AI decisions, payout formulas, deck legality, switch-token thresholds, or the $50 victory target. It presents the converged v0.5.12 system more clearly.
