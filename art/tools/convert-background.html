@@ -1,0 +1,5 @@
+<!doctype html><meta charset="utf-8"><canvas id="c"></canvas><pre id="result">waiting</pre><script>
+const p=new URLSearchParams(location.search),img=new Image();
+img.onload=()=>{const c=document.querySelector('#c'),ctx=c.getContext('2d');c.width=Number(p.get('w')||1664);c.height=Number(p.get('h')||936);const scale=Math.max(c.width/img.width,c.height/img.height),sw=c.width/scale,sh=c.height/scale,sx=(img.width-sw)/2,sy=(img.height-sh)/2;ctx.drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);document.querySelector('#result').textContent=c.toDataURL('image/webp',Number(p.get('q')||.86))};
+img.src=p.get('src');
+</script>

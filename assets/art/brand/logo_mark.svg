@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 2048 2048" role="img" aria-labelledby="title desc">
+  <title id="title">Bartender: Last Call coaster mark</title>
+  <desc id="desc">A brass letter B inside a circular art-deco coaster emblem.</desc>
+  <defs>
+    <radialGradient id="navy" cx="35%" cy="28%"><stop stop-color="#1C293C"/><stop offset="1" stop-color="#090E18"/></radialGradient>
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFF0B8"/><stop offset=".48" stop-color="#E9B85A"/><stop offset="1" stop-color="#8D6327"/></linearGradient>
+  </defs>
+  <circle cx="1024" cy="1024" r="902" fill="url(#navy)" stroke="url(#brass)" stroke-width="42"/>
+  <circle cx="1024" cy="1024" r="810" fill="none" stroke="#E9B85A" stroke-width="12" opacity=".72"/>
+  <path d="M1024 244l32 74 81 7-62 53 19 79-70-42-70 42 19-79-62-53 81-7z" fill="#E9B85A"/>
+  <path d="M1024 1804l32-74 81-7-62-53 19-79-70 42-70-42 19 79-62 53 81 7z" fill="#E9B85A"/>
+  <path d="M650 530h388c276 0 442 115 442 325 0 125-65 220-180 268 145 43 226 147 226 302 0 235-185 363-494 363H650v-170h102V700H650zm314 492h83c148 0 224-51 224-153 0-99-75-145-224-145H964zm0 596h102c166 0 249-58 249-174 0-111-83-166-249-166H964z" fill="url(#brass)"/>
+  <path d="M430 1024h120m948 0h120" stroke="#E9B85A" stroke-width="28" stroke-linecap="round"/>
+</svg>

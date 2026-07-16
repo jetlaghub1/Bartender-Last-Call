@@ -89,5 +89,49 @@ Validation date: 2026-07-15
 - Prompt 14 deck builder renders all 42 drinks with 44px phone controls: PASS
 - Prompt 14 browser console errors and warnings: PASS (none)
 - Prompt 14 uses CSS-native individual card motifs rather than repeated promotional artwork: PASS
+- Prompt 15 replayability-first design gate: PASS
+- Prompt 15 exact 89-asset manifest totals: PASS (12 system, 7 bartenders, 28 customers, 42 drinks)
+- Prompt 15 manifest drink IDs, names, and Spirits match game data: PASS
+- Prompt 15 manifest customer and bartender names match game data: PASS
+- Prompt 15 bartender specialties match game data: PASS
+- Prompt 15 continuous production order and unique lowercase ASCII filenames: PASS
+- Prompt 15 master/runtime dimensions and 10% safe zones: PASS
+- Prompt 15 no-collage, no-baked-text, fictional-adult, and review-gate requirements: PASS
+- Prompt 15 self-contained visual reference sheet with no external dependencies: PASS
+- Prompt 15 gameplay, AI, rules, and balance values unchanged: PASS
+- Prompt 15 visual reference at 1280×720 with no horizontal overflow: PASS
+- Prompt 15 visual reference at 390×844 with no horizontal overflow: PASS
+- Prompt 15 browser console warnings/errors: PASS (none)
+- Complete automated regression suite: PASS (17 of 17 test files)
+- v0.6.1a legal deck save and read-back verification: PASS
+- v0.6.1a saved deck survives a fresh storage instance: PASS
+- v0.6.1a blocked storage retains a session deck and reports the limitation: PASS
+- v0.6.1a invalid deck remains unsaved with actionable feedback: PASS
+- v0.6.1a corrupt saved data recovers to the legal starter deck: PASS
+- v0.6.1a deck loads return defensive copies: PASS
+- Prompt 16 batch 01 exact manifest orders 1–8: PASS
+- Prompt 16 batch 01 separate runtime files and approved status: PASS
+- Prompt 16 PNG dimensions and RGBA transparency: PASS
+- Prompt 16 WebP signatures and browser-sized payloads: PASS
+- Prompt 16 SVG titles, local-only content, and script-free markup: PASS
+- Prompt 16 main-bar, match-table, drink-frame, bartender-frame, and switch-token integration: PASS
+- Prompt 16 desktop layout at 1280×720 with no horizontal overflow: PASS
+- Prompt 16 phone layout at 390×844 with no horizontal overflow: PASS
+- Prompt 16 runtime image loads: PASS (logo 512 px, wordmark 1200 px, token 64 px)
+- Prompt 16 browser console warnings/errors: PASS (none)
+- Prompt 16 gameplay, AI, rules, content, switch-token behavior, and balance values unchanged: PASS
+- Prompt 16 batch 02 exact manifest orders 9–16: PASS
+- Prompt 16 batch 02 four editable SVG icon masters and four transparent 64×64 PNG exports: PASS
+- Prompt 16 batch 02 four 1086×1448 portrait sources and four 768×1024 WebP exports: PASS
+- Prompt 16 batch 02 Love, Like, Dislike, and Appeal live-interface integration: PASS
+- Prompt 16 batch 02 Ace, Mara, Theo, and June selection/HUD integration: PASS
+- Prompt 16 batch 02 portrait safe zones, distinct silhouettes, specialty cues, and shared lighting: PASS
+- Prompt 16 batch 02 desktop layout at 1280x720 with no horizontal overflow: PASS
+- Prompt 16 batch 02 phone layout at 390x844 with no horizontal overflow: PASS
+- Prompt 16 batch 02 runtime icon loads: PASS (four icons at 64x64)
+- Prompt 16 batch 02 runtime portrait loads: PASS (four portraits at 768x1024)
+- Prompt 16 batch 02 remaining bartender glyph fallbacks: PASS (Nico, Sol, and Rae pending their ordered art batch)
+- Prompt 16 batch 02 browser console warnings/errors: PASS (none)
+- Prompt 16 batch 02 gameplay, AI, rules, content, switch-token behavior, and balance values unchanged: PASS
 
 The browser checks ran against a local HTTP server. The public build remains dependency-free and can also launch by opening `index.html` directly after extraction.

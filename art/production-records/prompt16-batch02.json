@@ -1,0 +1,23 @@
+{
+  "batch": "prompt16-batch02",
+  "projectVersion": "0.7.1",
+  "orders": [9, 10, 11, 12, 13, 14, 15, 16],
+  "reviewState": "approved",
+  "designGoal": "Make customer evaluation faster and establish four memorable, mechanically legible bartender identities.",
+  "assets": [
+    {"file": "icons/icon_appeal.png", "method": "code-native raster export from editable SVG", "master": "art/masters/prompt16-batch02/icon_appeal.svg", "review": ["three-ray star inside glass rim", "single-color silhouette", "legible at 16 pixels"]},
+    {"file": "icons/icon_love.png", "method": "code-native raster export from editable SVG", "master": "art/masters/prompt16-batch02/icon_love.svg", "review": ["heart silhouette", "distinct pink identity", "legible at 16 pixels"]},
+    {"file": "icons/icon_like.png", "method": "code-native raster export from editable SVG", "master": "art/masters/prompt16-batch02/icon_like.svg", "review": ["thumb-up silhouette", "distinct green identity", "legible at 16 pixels"]},
+    {"file": "icons/icon_dislike.png", "method": "code-native raster export from editable SVG", "master": "art/masters/prompt16-batch02/icon_dislike.svg", "review": ["thumb-down silhouette", "distinct red identity", "legible at 16 pixels"]},
+    {"file": "bartenders/bartender_ace_beer.webp", "method": "image generation plus loss-aware WebP export", "source": "art/masters/prompt16-batch02/bartender_ace_beer_source.png", "review": ["sturdy rolled-sleeve silhouette", "amber tap cue", "face and hands remain inside safe zone", "no brands or text"]},
+    {"file": "bartenders/bartender_mara_vodka.webp", "method": "image generation plus loss-aware WebP export", "source": "art/masters/prompt16-batch02/bartender_mara_vodka_source.png", "review": ["crisp geometric silhouette", "clear shaker cue", "face and hands remain inside safe zone", "no brands or text"]},
+    {"file": "bartenders/bartender_theo_whiskey.webp", "method": "image generation plus loss-aware WebP export", "source": "art/masters/prompt16-batch02/bartender_theo_whiskey_source.png", "review": ["composed mature silhouette", "copper jigger cue", "face and hand remain inside safe zone", "no brands or text"]},
+    {"file": "bartenders/bartender_june_rum.webp", "method": "image generation plus loss-aware WebP export", "source": "art/masters/prompt16-batch02/bartender_june_rum_source.png", "review": ["energetic diagonal silhouette", "sugar-cane and coral cue", "face and hands remain inside safe zone", "no brands or text"]}
+  ],
+  "runtimeNotes": {
+    "portraitSource": [1086, 1448],
+    "portraitRuntime": [768, 1024],
+    "reason": "The generated 3:4 originals were reduced directly to runtime dimensions with no crop and no upscaling.",
+    "gameplayChanged": false
+  }
+}

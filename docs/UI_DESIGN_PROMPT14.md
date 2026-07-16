@@ -7,7 +7,7 @@ Scope: presentation and usability only
 
 Bartender: Last Call now uses a late-night cocktail-bar identity: midnight blue surfaces, burgundy atmosphere, warm brass highlights, ivory typography, and restrained neon player accents. Serif display type supplies character while the system sans-serif keeps rules and values readable.
 
-All temporary character and drink motifs are built from text and CSS. No single promotional collage or shared bitmap is repeated across cards. Prompt 15 will define the production-art specification before Prompt 16 creates final assets.
+All temporary character and drink motifs are built from text and CSS. No single promotional collage or shared bitmap is repeated across cards. Prompt 15 now defines the approved production-art specification; Prompt 16 creates and reviews the final assets in batches of no more than eight.
 
 ## Information hierarchy
 

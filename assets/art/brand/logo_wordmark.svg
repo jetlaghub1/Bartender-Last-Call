@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 2400 1200" role="img" aria-labelledby="title desc">
+  <title id="title">Bartender: Last Call</title>
+  <desc id="desc">An ivory and brass art-deco wordmark for Bartender: Last Call.</desc>
+  <defs>
+    <linearGradient id="brass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFF0B8"/><stop offset=".42" stop-color="#FFD985"/><stop offset="1" stop-color="#B47B2E"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g fill="none" stroke="#E9B85A" stroke-width="8" opacity=".82">
+    <path d="M160 360H610l70 70h1040l70-70h450"/>
+    <path d="M160 840H610l70-70h1040l70 70h450"/>
+    <path d="M102 600h210m1776 0h210"/>
+  </g>
+  <g fill="#090E18" stroke="#E9B85A" stroke-width="12">
+    <circle cx="1200" cy="600" r="472"/><circle cx="1200" cy="600" r="442" stroke-width="4"/>
+  </g>
+  <g text-anchor="middle">
+    <text x="1200" y="520" fill="#FFF8E8" font-family="Georgia, 'Times New Roman', serif" font-size="208" font-weight="700" letter-spacing="2">Bartender:</text>
+    <text x="1200" y="735" fill="url(#brass)" filter="url(#glow)" font-family="Georgia, 'Times New Roman', serif" font-size="240" font-style="italic" font-weight="700" letter-spacing="-5">Last Call</text>
+    <text x="1200" y="900" fill="#AAB6C9" font-family="Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="18">READ THE ROOM · WIN THE NIGHT</text>
+  </g>
+  <g fill="#E9B85A">
+    <path d="M1200 170l18 42 46 4-35 30 11 45-40-24-40 24 11-45-35-30 46-4z"/>
+    <path d="M1200 1030l18-42 46-4-35-30 11-45-40 24-40-24 11 45-35 30 46 4z"/>
+  </g>
+</svg>

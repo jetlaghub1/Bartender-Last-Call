@@ -160,3 +160,48 @@
 - Improved the deck builder, difficulty screen, menu, tutorial surfaces, privacy handoffs, touch targets, focus states, and reduced-motion behavior.
 - Verified a complete AI round and deck builder at desktop and 390×844 phone layouts with no horizontal overflow or browser console errors.
 - Used CSS-native card and character motifs only; no promotional collage is repeated as card artwork.
+
+## v0.6.1-prompt15 — production art bible
+
+- Made fun and replayability the first art-approval gate: assets must improve recognition, decision speed, memorable identity, and repeated-match variety.
+- Approved the late-night art-deco bar direction, shared lighting recipe, interface palette, seven Spirit color families, and production typography.
+- Defined exact logo, drink, bartender, customer, frame, icon, and background master/runtime dimensions.
+- Defined character safety, fictional-adult requirements, safe zones, composition rules, trait storytelling, rarity treatment, and accessibility constraints.
+- Locked lowercase ASCII runtime filenames and a continuous production order for 89 assets: 12 system assets, 7 bartenders, 28 customers, and 42 drinks.
+- Added a self-contained visual reference sheet and reusable CSS style tokens.
+- Added Prompt 16 batch rules, generation-template requirements, and a strict human review gate.
+- Added automated tests proving manifest names, IDs, specialties, counts, dimensions, filenames, and content coverage match the real game data.
+- Made no gameplay, AI, content, scoring, payout, switch-token, price, or balance changes.
+
+## v0.6.1a — deck-save hotfix
+
+- Reproduced and verified legal deck persistence through menu navigation and a full page reload.
+- Replaced silent storage writes with a validated storage module that reads the saved deck back before reporting success.
+- Added a visible “Deck saved” confirmation on the main menu.
+- Made Save Deck clickable for invalid decks so it can explain exactly what must be corrected instead of appearing unresponsive.
+- Added a safe session-only fallback and honest warning when permanent browser storage is unavailable.
+- Added automated persistent, blocked-storage, invalid-deck, corrupt-data, and defensive-copy tests.
+- Made no deck rules, gameplay rules, content, AI, prices, or balance changes.
+
+## v0.7.0-prompt16-batch01 — production art foundation
+
+- Produced and approved manifest orders 1–8 as eight separate runtime assets.
+- Added the primary wordmark and circular coaster mark as self-contained SVGs.
+- Added distinct painterly main-bar and tactical match-table WebP environments with quiet UI safe zones.
+- Added transparent Core frames for drink, bartender, and customer cards.
+- Added the circular-arrows switch-token icon and kept the live token count as accessible HTML.
+- Integrated the menu, match, drink-frame, bartender-frame, and switch-token art without changing gameplay.
+- Preserved the generated background originals and reproducible frame, icon, and WebP export tools in the source archive.
+- Verified 17 automated test files, desktop 1280×720, phone 390×844, production asset loading, and zero browser warnings or errors.
+- Made no rules, AI, PvP, tutorial, content, price, payout, switch-token, deck, or balance changes.
+
+## v0.7.1-prompt16-batch02 — evaluation icons and bartender identities
+
+- Produced and approved manifest orders 9–16 as eight separate runtime assets.
+- Added editable and runtime Appeal, Love, Like, and Dislike icons with distinct 16-pixel silhouettes.
+- Added the first four production bartender portraits: Ace, Mara, Theo, and June.
+- Preserved the full 3:4 generated sources and exported exact 768×1024 WebP files without cropping or upscaling.
+- Integrated preference icons, the live Appeal icon, bartender-selection portraits, and HUD portraits.
+- Kept live labels, values, names, specialties, and token counts as accessible HTML.
+- Retained glyph fallbacks for Nico, Sol, and Rae until their scheduled portraits are approved.
+- Made no rules, AI, PvP, tutorial, content, price, payout, switch-token, deck, or balance changes.

@@ -1,0 +1,23 @@
+{
+  "batch": "prompt16-batch01",
+  "projectVersion": "0.7.0",
+  "orders": [1, 2, 3, 4, 5, 6, 7, 8],
+  "reviewState": "approved",
+  "designGoal": "Establish a calm, recognizable late-night bar identity that supports fast decisions and comfortable repeat play.",
+  "assets": [
+    {"file": "brand/logo_wordmark.svg", "method": "code-native vector", "review": ["brand text is intentional and readable", "no external font or network dependency", "works on dark surfaces"]},
+    {"file": "brand/logo_mark.svg", "method": "code-native vector", "review": ["recognizable at header size", "circular coaster silhouette", "matches wordmark brass treatment"]},
+    {"file": "backgrounds/background_main-bar.webp", "method": "image generation plus loss-aware WebP export", "source": "art/masters/prompt16-batch01/background_main-bar_source.png", "review": ["single environment", "no readable labels or brands", "quiet center safe zone", "warm-left and cool-right lighting"]},
+    {"file": "backgrounds/background_match-table.webp", "method": "image generation plus loss-aware WebP export", "source": "art/masters/prompt16-batch01/background_match-table_source.png", "review": ["single environment", "no cards or UI baked in", "clear opposing play zones", "calm central play surface"]},
+    {"file": "frames/frame_drink-core.png", "method": "code-native raster export", "review": ["transparent content area", "spirit-neutral core treatment", "safe border geometry"]},
+    {"file": "frames/frame_bartender-core.png", "method": "code-native raster export", "review": ["transparent portrait area", "burgundy identity accent", "distinct from drink frame"]},
+    {"file": "frames/frame_customer-core.png", "method": "code-native raster export", "review": ["transparent portrait area", "three preference slots", "distinct cyan information accent"]},
+    {"file": "icons/icon_switch-token.png", "method": "code-native raster export", "review": ["two circular arrows", "bartender star center", "legible at 64 and 16 pixels"]}
+  ],
+  "runtimeNotes": {
+    "backgroundSource": [1672, 941],
+    "backgroundRuntime": [1664, 936],
+    "reason": "The generated originals were cropped down to a clean 16:9 runtime without programmatic upscaling.",
+    "gameplayChanged": false
+  }
+}
