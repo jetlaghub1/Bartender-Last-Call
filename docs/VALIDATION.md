@@ -1,5 +1,14 @@
 # Validation report
 
+## Prompt 16 Batch 06 (v0.7.5)
+
+- Seven final customer portraits generated, reviewed, converted, and integrated.
+- All 28 customers now have unique live artwork.
+- All 17 automated rule, UI, content, balance, simulation, tutorial, PvP, AI, storage, and art tests pass.
+- The GitHub source ZIP contains all seven Batch 06 source masters.
+- The itch.io ZIP contains `index.html` at its root, 28 customer WebP portraits, and no development-only folders.
+- Gameplay and converged balance values are unchanged.
+
 Validation date: 2026-07-15
 
 - JavaScript syntax: PASS (`data.js`, `rules.js`, `app.js`, and test file)
@@ -154,5 +163,17 @@ Validation date: 2026-07-15
 - Prompt 16 batch 03 browser console warnings/errors: PASS (none)
 - Prompt 16 batch 03 complete automated regression suite: PASS (17 of 17 test files)
 - Prompt 16 batch 03 gameplay, AI, rules, balance, switch-token behavior, and content data unchanged: PASS
+- Prompt 16 batch 04 exact manifest orders 25–32: PASS
+- Prompt 16 batch 04 eight customer sources at 1254×1254 and runtime exports at 768×768: PASS
+- Prompt 16 batch 04 all eight customer portraits integrated into live customer encounters: PASS
+- Prompt 16 batch 04 central safe zones, distinct silhouettes, shared lighting, and thumbnail readability: PASS
+- Prompt 16 batch 04 unfinished customers retain initials fallback: PASS (Budget Tourist)
+- Prompt 16 batch 04 gameplay, AI, rules, balance, switch-token behavior, and content data unchanged: PASS
+- Prompt 16 batch 05 exact manifest orders 33–40: PASS
+- Prompt 16 batch 05 eight customer sources at 1254×1254 and runtime exports at 768×768: PASS
+- Prompt 16 batch 05 all eight customer portraits integrated into live customer encounters: PASS
+- Prompt 16 batch 05 central safe zones, distinct silhouettes, shared lighting, and thumbnail readability: PASS
+- Prompt 16 batch 05 unfinished customers retain initials fallback: PASS (Bookshop Owner)
+- Prompt 16 batch 05 gameplay, AI, rules, balance, switch-token behavior, and content data unchanged: PASS
 
 The browser checks ran against a local HTTP server. The public build remains dependency-free and can also launch by opening `index.html` directly after extraction.

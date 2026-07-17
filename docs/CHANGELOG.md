@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.7.5-prompt16-batch06 — complete customer portrait cast
+
+- Added and integrated unique portraits for the final seven customers.
+- Every customer in the current 28-customer game now has production artwork.
+- Preserved all gameplay, AI, switch-token, content, and balance behavior.
+- Added source masters, conversion tooling, production record, tests, and release packaging.
+
+## v0.7.4-prompt16-batch05 — broader recurring-customer cast
+
+- Added eight separately generated production customer portraits for Budget Tourist, Hop Scholar, Cocktail Minimalist, Brunch Organizer, Steakhouse Chef, Dance Floor DJ, Island Local, and Desert Racer.
+- Integrated all eight portraits into live customer encounters while preserving initials fallbacks for the final seven unfinished customers.
+- Expanded age, occupation, presentation, posture, and prop variety to improve fast recognition across repeated matches.
+- Advanced the production manifest through order 40; order 41 is next.
+- Changed presentation only; gameplay, rules, AI, balance, switch-token behavior, and content data remain unchanged.
+
+## v0.7.3-prompt16-batch04 — customer identity expansion
+
+- Added eight separately generated production customer portraits for Agave Hunter, Wine Critic, Dessert Date, Punk Drummer, Marathoner, Spice Blogger, Citrus Fan, and Executive.
+- Integrated all eight portraits into the live customer panel while preserving initials fallbacks for the remaining fifteen customers.
+- Preserved the shared art-deco bar lighting, square safe-zone composition, fictional-adult requirement, and thumbnail readability established by the approved art bible.
+- Advanced the production manifest through order 32; order 33 is next.
+- Changed presentation only; gameplay, rules, AI, balance, switch-token behavior, and content data remain unchanged.
+
 ## v0.7.2-prompt16-batch03 — complete bartender roster and first customers
 
 - Added production portraits for Nico, Sol, and Rae, completing the seven-bartender art roster.

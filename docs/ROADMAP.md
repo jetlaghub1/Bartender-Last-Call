@@ -16,7 +16,7 @@
 13. Iterate until balance targets are met — complete in v0.5.12.
 14. Redesign the commercial-style interface — complete in v0.6.0.
 15. Approve a consistent art specification — complete in v0.6.1.
-16. Generate production art in batches of eight — batches 01–03 (orders 1–24) complete through v0.7.2; repeat from order 25.
+16. Generate production art in batches of eight — batches 01–06 (orders 1–47) complete through v0.7.5; repeat from order 48.
 17. Add sound and animation.
 18. Run full functional QA.
 19. Fix all critical and major bugs.
