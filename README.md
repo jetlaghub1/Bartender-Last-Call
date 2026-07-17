@@ -1,6 +1,12 @@
 # Bartender: Last Call
 
-A playable browser prototype of JetLagHub's competitive bartender strategy card game. This repository contains the real game source, deterministic simulation engine, complete Prompt 11–13 balance history, the Prompt 14 commercial interface, the approved Prompt 15 production art bible, and two reviewed Prompt 16 production-art batches.
+## GitHub upload
+
+Use the lightweight `Bartender_Last_Call_v0.7.5_GitHub_Ready.zip` package for GitHub. Extract it first, then upload the extracted files and folders. The optimized playable artwork is included.
+
+Full-resolution PNG art masters are intentionally stored in the separate `Bartender_Last_Call_v0.7.5_Art_Masters_Backup.zip` archive because they make browser-based GitHub uploads unnecessarily large. Keep that archive locally; do not upload it to the normal repository unless Git LFS is configured.
+
+A playable browser prototype of JetLagHub's competitive bartender strategy card game. This repository contains the real game source, deterministic simulation engine, complete Prompt 11–13 balance history, the Prompt 14 commercial interface, the approved Prompt 15 production art bible, and five reviewed Prompt 16 production-art batches.
 
 ## Play locally
 
@@ -24,7 +30,7 @@ Open `index.html` in Chrome, Edge, Firefox, or Safari. No installation or networ
 - Paired 100,000-game before/after patch reports in `reports/prompt12/`
 - Final 100,000-game convergence study in `reports/prompt13/`
 - Production art bible, visual reference sheet, exact asset dimensions, and a validated 89-asset manifest for Prompt 16
-- Sixteen integrated production assets: brand marks, bar environments, Core frames, five gameplay icons, and four bartender portraits
+- Forty integrated production assets: brand marks, bar environments, Core frames, five gameplay icons, all seven bartender portraits, and twenty-one customer portraits
 
 ## Repository map
 
@@ -80,4 +86,4 @@ Extract the GitHub ZIP and upload its contents, not the enclosing folder, so thi
 
 ## Status
 
-Prompt 16 batch 03 is complete in v0.7.2. The art now establishes the game’s brand, environments, evaluation icons, all seven bartender identities, and the first five customer identities without changing gameplay or the converged v0.5.12 balance values. Prompt 16 remains the active repeatable milestone until all manifest assets are produced; the next batch begins with order 25. See `docs/ROADMAP.md`.
+Prompt 16 batch 06 is complete in v0.7.5. The art now establishes the game’s brand, environments, evaluation icons, all seven bartender identities, and the all twenty-eight customer identities without changing gameplay or the converged v0.5.12 balance values. Prompt 16 remains the active repeatable milestone until all manifest assets are produced; the next batch begins with order 48. See `docs/ROADMAP.md`.
